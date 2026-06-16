@@ -634,7 +634,7 @@ function cleanMainAnswerText(answer) {
 
     // Remove noisy source markers from the visible chat answer.
     text = text.replace(/\[S\d+\]/g, "");
-    text = text.replace(/\s+\|\s*[^|\n]*page\s*\d+/gi, "");
+    text = text.replace(/\s+\|\s*[^|\\n]*page\s*\d+/gi, "");
     text = text.replace(/Vectorless_RAG_Master_Guide\.pdf/gi, "");
 
     // Remove sections that belong only in the source panel.
@@ -643,8 +643,8 @@ function cleanMainAnswerText(answer) {
     text = text.replace(/Source\s+\d+[\s\S]*$/i, "");
 
     // Clean repeated spaces.
-    text = text.replace(/[ \t]+/g, " ");
-    text = text.replace(/\n{3,}/g, "\n\n");
+    text = text.replace(/[ \\t]+/g, " ");
+    text = text.replace(/\\n{3,}/g, "\\n\\n");
 
     return text.trim();
 }
@@ -674,7 +674,7 @@ function splitAnswerIntoReadableBlocks(text) {
 
     // If answer already has lines, preserve useful lines.
     const existingLines = cleaned
-        .split(/\n+/)
+        .split(/\\n+/)
         .map(x => x.trim())
         .filter(Boolean);
 
