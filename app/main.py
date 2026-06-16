@@ -1,3 +1,10 @@
+
+from fastapi import Request, Query
+from fastapi.responses import HTMLResponse
+from app.product.auth_service import get_current_user_from_request, require_admin_user, dev_login_user
+from app.product.admin_service import get_admin_status, get_admin_users, get_admin_documents, get_admin_conversations, get_admin_system_summary
+from app.product.admin_ui import get_admin_panel_html
+
 from app.product.source_viewer import get_source_details, get_source_html
 from app.deployment.hf_status import get_home_html, get_product_app_html
 from app.deployment.hf_status import get_product_app_html
@@ -689,3 +696,66 @@ def document_source_view(
         page=page,
         chunk_id=chunk_id
     )
+
+
+# Auth foundation endpoints
+
+@app.get("/auth/me")
+def auth_me(request: Request):
+    return get_current_user_from_request(request)
+
+
+@app.get("/auth/dev-login")
+def auth_dev_login(
+    email: str = Query(..., min_length=3),
+    name: str = Query(None)
+):
+    return dev_login_user(email=email, name=name)
+
+
+# Hidden admin panel UI
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_panel_page():
+    return get_admin_panel_html()
+
+
+# Admin API endpoints
+
+@app.get("/admin/status")
+def admin_status(request: Request):
+    current_admin = require_admin_user(request)
+    return get_admin_status(current_admin=current_admin)
+
+
+@app.get("/admin/users")
+def admin_users(
+    request: Request,
+    limit: int = Query(100, ge=1, le=500)
+):
+    require_admin_user(request)
+    return get_admin_users(limit=limit)
+
+
+@app.get("/admin/documents")
+def admin_documents(
+    request: Request,
+    limit: int = Query(100, ge=1, le=500)
+):
+    require_admin_user(request)
+    return get_admin_documents(limit=limit)
+
+
+@app.get("/admin/conversations")
+def admin_conversations(
+    request: Request,
+    limit: int = Query(100, ge=1, le=500)
+):
+    require_admin_user(request)
+    return get_admin_conversations(limit=limit)
+
+
+@app.get("/admin/system")
+def admin_system(request: Request):
+    require_admin_user(request)
+    return get_admin_system_summary()

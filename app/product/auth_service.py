@@ -1,4 +1,5 @@
-﻿import os
+
+import os
 from typing import Dict, Any, Optional
 
 from fastapi import Request, HTTPException
@@ -64,7 +65,6 @@ def get_current_user_from_request(request: Request) -> Dict[str, Any]:
     )
 
     user["authenticated"] = True
-
     return user
 
 
@@ -74,7 +74,7 @@ def require_authenticated_user(request: Request) -> Dict[str, Any]:
     if not user.get("authenticated"):
         raise HTTPException(
             status_code=401,
-            detail="Authentication required. For dev testing, pass X-User-Email header."
+            detail="Authentication required."
         )
 
     return user
@@ -96,10 +96,7 @@ def dev_login_user(email: str, name: Optional[str] = None) -> Dict[str, Any]:
     email = normalize_email(email)
 
     if not email:
-        raise HTTPException(
-            status_code=400,
-            detail="email is required"
-        )
+        raise HTTPException(status_code=400, detail="email is required")
 
     role = infer_role(email)
     user_id = make_user_id(email)
