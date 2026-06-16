@@ -175,6 +175,7 @@ def get_secure_admin_html() -> str:
             <button onclick="loadStorage()">Storage</button>
             <button onclick="loadSecurity()">Security</button>
             <button onclick="loadRoutes()">Routes</button>
+            <button onclick="loadFeedback()">Feedback</button>
             <button onclick="window.location.href='/app'">Open User App</button>
             <button onclick="window.location.href='/auth/logout'">Logout</button>
             <button class="danger" onclick="clearKey()">Clear Admin Key</button>
@@ -229,7 +230,35 @@ function saveKey() {
 
     sessionStorage.setItem("admin_dashboard_key", value);
     byId("adminKey").value = "";
-    loadOverview();
+    
+async function loadFeedback() {
+    byId("pageTitle").textContent = "User Feedback";
+    try {
+        const data = await apiGet("/admin/api/feedback?limit=100");
+        byId("notice").innerHTML = "";
+
+        let html = '<div class="card"><h3>Feedback: ' + escapeHtml(data.count) + '</h3>';
+        html += '<p><a href="/admin/api/feedback/export" target="_blank">Open JSONL export</a></p>';
+        html += '<table><thead><tr><th>Time</th><th>Type</th><th>Rating</th><th>Message</th><th>Document</th></tr></thead><tbody>';
+
+        (data.feedback || []).forEach(item => {
+            html += '<tr>';
+            html += '<td>' + escapeHtml(item.created_at) + '</td>';
+            html += '<td>' + escapeHtml(item.feedback_type) + '</td>';
+            html += '<td>' + escapeHtml(item.rating || "") + '</td>';
+            html += '<td>' + escapeHtml(item.message || "") + '</td>';
+            html += '<td>' + escapeHtml(item.document_id || "") + '</td>';
+            html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        byId("content").innerHTML = html;
+    } catch (error) {
+        showError(error);
+    }
+}
+
+loadOverview();
 }
 
 function clearKey() {

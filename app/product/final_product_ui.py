@@ -239,6 +239,31 @@ def get_product_app_html() -> str:
             <div id="citationsBox" class="small" style="color:#64748b;">Sources will appear here after an answer.</div>
         </div>
 
+        
+        <div class="panel-section" id="feedbackBox">
+            <h3>Feedback</h3>
+            <select id="feedbackType">
+                <option value="general">General feedback</option>
+                <option value="answer_quality">Answer quality issue</option>
+                <option value="ui_bug">UI bug</option>
+                <option value="source_issue">Source/citation issue</option>
+                <option value="feature_request">Feature request</option>
+            </select>
+
+            <select id="feedbackRating" style="margin-top:8px;">
+                <option value="">Rating optional</option>
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Good</option>
+                <option value="3">3 - Average</option>
+                <option value="2">2 - Poor</option>
+                <option value="1">1 - Bad</option>
+            </select>
+
+            <textarea id="feedbackMessage" placeholder="Write feedback..." style="width:100%;min-height:82px;margin-top:8px;"></textarea>
+            <button class="full green" onclick="submitFeedback()">Submit Feedback</button>
+            <div id="feedbackStatus" class="small" style="color:#64748b;">Feedback is saved to backend storage.</div>
+        </div>
+
         <div class="panel-section danger-zone">
             <h3>Danger Zone</h3>
             <button class="red" onclick="deleteSelectedDocument()">Delete Selected Document</button>
@@ -1854,6 +1879,125 @@ and defines all button functions used by the UI.
     } else {
         boot();
     }
+})();
+</script>
+
+
+<script id="feedback-submit-layer">
+(function () {
+    function byId(id) {
+        return document.getElementById(id);
+    }
+
+    function selectedDocumentIdForFeedback() {
+        try {
+            if (typeof selectedId !== "undefined" && selectedId) return selectedId;
+        } catch (e) {}
+
+        try {
+            const raw = localStorage.getItem("graphrag_stable_selected_document_id");
+            if (raw) return raw;
+        } catch (e) {}
+
+        try {
+            const raw2 = localStorage.getItem("graphrag_selected_document_id");
+            if (raw2) return raw2;
+        } catch (e) {}
+
+        return null;
+    }
+
+    function latestQuestionForFeedback() {
+        try {
+            const chats = JSON.parse(localStorage.getItem("graphrag_stable_chats") || "{}");
+            const keys = Object.keys(chats);
+
+            for (let i = keys.length - 1; i >= 0; i--) {
+                const convo = chats[keys[i]] || [];
+                for (let j = convo.length - 1; j >= 0; j--) {
+                    if (convo[j].role === "user") return convo[j].content || "";
+                }
+            }
+        } catch (e) {}
+
+        return "";
+    }
+
+    function latestAnswerPreviewForFeedback() {
+        try {
+            const chats = JSON.parse(localStorage.getItem("graphrag_stable_chats") || "{}");
+            const keys = Object.keys(chats);
+
+            for (let i = keys.length - 1; i >= 0; i--) {
+                const convo = chats[keys[i]] || [];
+                for (let j = convo.length - 1; j >= 0; j--) {
+                    if (convo[j].role === "assistant") {
+                        return String(convo[j].content || convo[j].html || "").slice(0, 1000);
+                    }
+                }
+            }
+        } catch (e) {}
+
+        return "";
+    }
+
+    window.submitFeedback = async function () {
+        const typeEl = byId("feedbackType");
+        const ratingEl = byId("feedbackRating");
+        const msgEl = byId("feedbackMessage");
+        const statusEl = byId("feedbackStatus");
+
+        const message = msgEl ? msgEl.value.trim() : "";
+
+        if (!message) {
+            alert("Write feedback first.");
+            return;
+        }
+
+        if (statusEl) statusEl.textContent = "Saving feedback...";
+
+        const ratingValue = ratingEl && ratingEl.value ? Number(ratingEl.value) : null;
+
+        const payload = {
+            feedback_type: typeEl ? typeEl.value : "general",
+            rating: ratingValue,
+            message: message,
+            page_url: window.location.href,
+            document_id: selectedDocumentIdForFeedback(),
+            question: latestQuestionForFeedback(),
+            answer_preview: latestAnswerPreviewForFeedback()
+        };
+
+        try {
+            const response = await fetch("/feedback", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(JSON.stringify(data));
+            }
+
+            if (msgEl) msgEl.value = "";
+
+            if (statusEl) {
+                statusEl.textContent = data.hf_dataset_backup && data.hf_dataset_backup.saved
+                    ? "Feedback saved permanently to HF Dataset."
+                    : "Feedback saved locally. Configure HF_FEEDBACK_DATASET for permanent backup.";
+            }
+
+            alert("Feedback submitted. Thank you.");
+
+        } catch (error) {
+            if (statusEl) statusEl.textContent = "Feedback save failed.";
+            alert("Feedback failed: " + error.message);
+        }
+    };
 })();
 </script>
 

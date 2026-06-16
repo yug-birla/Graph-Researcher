@@ -1,4 +1,15 @@
 
+from fastapi import Request, Query
+from fastapi.responses import PlainTextResponse
+from app.product.feedback_service import (
+    FeedbackRequest,
+    submit_feedback,
+    list_feedback,
+    export_feedback_jsonl,
+    feedback_status,
+)
+
+
 from fastapi import Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.product.secure_admin_ui import get_secure_admin_html
@@ -895,3 +906,45 @@ def admin_monitor_security(request: Request):
 @app.get("/admin/api/monitor/routes")
 def admin_monitor_routes(request: Request):
     return get_routes_only(request=request, app=app)
+
+
+# Feedback endpoints
+
+@app.post("/feedback")
+def submit_user_feedback(payload: FeedbackRequest, request: Request):
+    return submit_feedback(payload=payload, request=request)
+
+
+@app.get("/feedback/status")
+def get_feedback_status():
+    return feedback_status()
+
+
+@app.get("/admin/api/feedback")
+def admin_list_feedback(request: Request, limit: int = Query(100, ge=1, le=500)):
+    try:
+        from app.product.admin_monitoring_service import require_secure_admin
+        require_secure_admin(request)
+    except Exception:
+        try:
+            from app.product.auth_service import require_admin_user
+            require_admin_user(request)
+        except Exception as exc:
+            raise exc
+
+    return list_feedback(limit=limit)
+
+
+@app.get("/admin/api/feedback/export", response_class=PlainTextResponse)
+def admin_export_feedback(request: Request):
+    try:
+        from app.product.admin_monitoring_service import require_secure_admin
+        require_secure_admin(request)
+    except Exception:
+        try:
+            from app.product.auth_service import require_admin_user
+            require_admin_user(request)
+        except Exception as exc:
+            raise exc
+
+    return export_feedback_jsonl()
