@@ -857,6 +857,21 @@ async function sendMessage() {
     }
 }
 
+
+// Phase 40B: expose button functions globally
+window.uploadDocument = uploadDocument;
+window.refreshDocuments = refreshDocuments;
+window.newChat = newChat;
+window.reindexSelectedDocument = reindexSelectedDocument;
+window.buildGraph = buildGraph;
+window.openGraphViewer = openGraphViewer;
+window.clearWorkspaceCache = clearWorkspaceCache;
+window.deleteSelectedDocument = deleteSelectedDocument;
+window.sendMessage = sendMessage;
+window.handleKeyDown = handleKeyDown;
+window.selectDocument = selectDocument;
+window.openSource = openSource;
+
 renderDocuments();
 </script>
 </body>
