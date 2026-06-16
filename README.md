@@ -481,15 +481,6 @@ http://127.0.0.1:8000/app
 
 ---
 
-## Resume Bullets
-
-* Built **GraphResearcher**, a citation-grounded GraphRAG document intelligence platform using FastAPI, hybrid retrieval, graph-based context, source verification, and Hugging Face Spaces deployment.
-* Implemented document upload, parsing, chunking, retrieval, graph construction, graph visualization, source viewer, answer-style rendering, and multi-document comparison.
-* Added secure admin monitoring with route, storage, security, feedback, and audit-log visibility using admin email allowlist and dashboard key authentication.
-* Integrated a feedback system with SQLite/JSONL local storage and optional permanent backup to a private Hugging Face Dataset.
-
----
-
 ## 30-Second Explanation
 
 GraphResearcher is a document intelligence app where users can upload PDFs, ask questions, and verify answers using citations and source chunks. It combines RAG-style retrieval with a GraphRAG layer that extracts entities and relationships from documents. The app also supports graph visualization, multi-document comparison, feedback collection, and a secure admin monitoring dashboard.
