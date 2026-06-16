@@ -1,3 +1,5 @@
+from app.evaluation.graphrag_batch_evaluator import run_graphrag_batch_evaluation
+from app.evaluation.graph_fusion_evaluator import compare_graph_fusion_retrieval
 from app.graph.graph_guided_retriever import graph_guided_retrieve
 from app.graph.graph_context_service import build_graph_context_for_query
 from app.graph.graph_visualization import get_graph_visualization_html
@@ -77,7 +79,7 @@ def health_check():
         "message": f"{settings.APP_NAME} backend is alive",
         "environment": settings.ENVIRONMENT,
         "version": settings.APP_VERSION,
-        "phase": "Phase 16 - Graph-Guided Retrieval Debug Layer"
+        "phase": "Phase 20 - GraphRAG Batch Evaluation Report"
     }
 
 
@@ -194,7 +196,9 @@ def ask_question(request: AskRequest):
         use_reranker=request.use_reranker,
         use_llm=request.use_llm,
         use_graph=request.use_graph,
-        graph_entity_limit=request.graph_entity_limit
+        graph_entity_limit=request.graph_entity_limit,
+        use_graph_retrieval=request.use_graph_retrieval,
+        graph_retrieval_top_k=request.graph_retrieval_top_k
     )
 
 
@@ -480,3 +484,51 @@ def graph_guided_retrieval_endpoint(
         )
 
     return result
+
+
+# GraphRAG fusion evaluation endpoint
+
+@app.get("/documents/{document_id}/evaluation/graph-fusion")
+def evaluate_graph_fusion_for_document(
+    document_id: str,
+    query: str = Query(..., min_length=1),
+    top_k: int = Query(5, ge=1, le=20),
+    retrieval_mode: str = Query("hybrid"),
+    use_reranker: bool = True,
+    graph_entity_limit: int = Query(8, ge=1, le=30),
+    graph_retrieval_top_k: int = Query(5, ge=1, le=20)
+):
+    return compare_graph_fusion_retrieval(
+        document_id=document_id,
+        query=query,
+        top_k=top_k,
+        retrieval_mode=retrieval_mode,
+        use_reranker=use_reranker,
+        graph_entity_limit=graph_entity_limit,
+        graph_retrieval_top_k=graph_retrieval_top_k
+    )
+
+
+# GraphRAG batch evaluation endpoint
+
+@app.get("/documents/{document_id}/evaluation/graph-fusion/batch")
+def evaluate_graph_fusion_batch_for_document(
+    document_id: str,
+    custom_queries: Optional[str] = None,
+    top_k: int = Query(5, ge=1, le=20),
+    retrieval_mode: str = Query("hybrid"),
+    use_reranker: bool = True,
+    graph_entity_limit: int = Query(8, ge=1, le=30),
+    graph_retrieval_top_k: int = Query(5, ge=1, le=20),
+    compact: bool = True
+):
+    return run_graphrag_batch_evaluation(
+        document_id=document_id,
+        custom_queries=custom_queries,
+        top_k=top_k,
+        retrieval_mode=retrieval_mode,
+        use_reranker=use_reranker,
+        graph_entity_limit=graph_entity_limit,
+        graph_retrieval_top_k=graph_retrieval_top_k,
+        compact=compact
+    )
