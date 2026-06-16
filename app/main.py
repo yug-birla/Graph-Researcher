@@ -1,3 +1,4 @@
+from app.deployment.hf_status import get_home_html, get_product_app_html
 from app.deployment.hf_status import get_product_app_html
 import uuid
 from app.product.product_db import (
@@ -92,15 +93,10 @@ if settings.ENABLE_STATIC_ASSETS:
     )
 
 
-@app.get("/")
-def health_check():
-    return {
-        "status": "running",
-        "message": f"{settings.APP_NAME} backend is alive",
-        "environment": settings.ENVIRONMENT,
-        "version": settings.APP_VERSION,
-        "phase": "Phase 23 - Product Database Foundation"
-    }
+@app.get("/", response_class=HTMLResponse)
+def home_page():
+    return get_home_html()
+
 
 
 @app.get("/llm/status")
@@ -652,4 +648,11 @@ def get_product_conversation_messages(conversation_id: str):
 
 @app.get("/app", response_class=HTMLResponse)
 def product_app_page():
+    return get_product_app_html()
+
+
+# Improved product workspace app endpoint
+
+@app.get("/app", response_class=HTMLResponse)
+def product_workspace_app_page():
     return get_product_app_html()
