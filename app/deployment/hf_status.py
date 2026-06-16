@@ -2905,3 +2905,1274 @@ renderDocuments();
 </body>
 </html>
 """
+
+
+
+# =====================================================
+# Phase 27 override: clean user-facing home and app UI
+# =====================================================
+
+def get_home_html() -> str:
+    return """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GraphResearcher</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .nav {
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 56px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .brand {
+            font-weight: 900;
+            font-size: 23px;
+            letter-spacing: -0.5px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #334155;
+            margin-left: 22px;
+            font-weight: 700;
+        }
+
+        .hero {
+            min-height: calc(100vh - 72px);
+            display: grid;
+            grid-template-columns: 1fr 0.9fr;
+            gap: 52px;
+            align-items: center;
+            padding: 64px 72px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            font-size: 58px;
+            line-height: 1.04;
+            margin: 0 0 20px;
+            letter-spacing: -2px;
+        }
+
+        .hero p {
+            font-size: 19px;
+            line-height: 1.7;
+            color: #475569;
+            max-width: 710px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            background: #2563eb;
+            color: white;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-weight: 800;
+        }
+
+        .btn.dark {
+            background: #0f172a;
+        }
+
+        .preview {
+            background: #0f172a;
+            color: white;
+            border-radius: 26px;
+            padding: 24px;
+            box-shadow: 0 28px 70px rgba(15,23,42,0.24);
+        }
+
+        .mini-top {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: #64748b;
+            border-radius: 50%;
+        }
+
+        .preview-card {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+
+        .preview-card b {
+            color: #bfdbfe;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            padding: 0 72px 58px;
+        }
+
+        .feature {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            padding: 24px;
+        }
+
+        .feature p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        @media(max-width: 950px) {
+            .nav { padding: 0 22px; }
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 42px 24px;
+            }
+            h1 { font-size: 42px; }
+            .features {
+                grid-template-columns: 1fr;
+                padding: 0 24px 44px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="nav">
+        <div class="brand">GraphResearcher</div>
+        <div>
+            <a href="/app">Launch App</a>
+        </div>
+    </div>
+
+    <section class="hero">
+        <div>
+            <div class="badge">Document Chat + GraphRAG</div>
+            <h1>Upload documents. Ask questions. Verify every answer.</h1>
+            <p>
+                GraphResearcher lets users chat with PDFs and reports using citation-grounded retrieval,
+                graph context, and source-backed answers. No document IDs, no Swagger, no developer workflow.
+            </p>
+
+            <div class="actions">
+                <a class="btn" href="/app">Start Chatting</a>
+                <a class="btn dark" href="/deployment/health">System Health</a>
+            </div>
+        </div>
+
+        <div class="preview">
+            <div class="mini-top">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+
+            <div class="preview-card">
+                <b>1. Upload</b><br>
+                Add a PDF or document from the app sidebar.
+            </div>
+
+            <div class="preview-card">
+                <b>2. Chat</b><br>
+                Ask natural questions like ChatGPT or Gemini.
+            </div>
+
+            <div class="preview-card">
+                <b>3. Verify</b><br>
+                See document name, page number, source ID, and evidence preview.
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="feature">
+            <h3>Simple workspace</h3>
+            <p>Users upload and select documents normally. Internal IDs stay hidden.</p>
+        </div>
+
+        <div class="feature">
+            <h3>Grounded answers</h3>
+            <p>Answers are generated from retrieved evidence and source citations.</p>
+        </div>
+
+        <div class="feature">
+            <h3>GraphRAG inside</h3>
+            <p>Graph context and retrieval fusion run behind the scenes for better document reasoning.</p>
+        </div>
+    </section>
+</body>
+</html>
+"""
+
+
+def get_product_app_html() -> str:
+    return """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GraphResearcher App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background: #f8fafc;
+            color: #111827;
+        }
+
+        .app {
+            display: grid;
+            grid-template-columns: 310px 1fr 370px;
+            height: 100vh;
+        }
+
+        .sidebar {
+            background: #0f172a;
+            color: white;
+            padding: 18px;
+            overflow-y: auto;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 18px;
+        }
+
+        .upload-box {
+            border: 1px dashed rgba(255,255,255,0.35);
+            border-radius: 16px;
+            padding: 14px;
+            background: rgba(255,255,255,0.06);
+            margin-bottom: 20px;
+        }
+
+        .upload-box input {
+            width: 100%;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 13px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            font-weight: 800;
+        }
+
+        button:hover { background: #1d4ed8; }
+        button.secondary { background: #334155; }
+        button.green { background: #059669; }
+        button.red { background: #dc2626; }
+        button.light {
+            background: #f1f5f9;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+        }
+
+        .full {
+            width: 100%;
+            margin-bottom: 9px;
+        }
+
+        .small {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        .doc-card {
+            padding: 12px;
+            border-radius: 13px;
+            background: rgba(255,255,255,0.07);
+            margin-bottom: 9px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .doc-card.active {
+            background: #2563eb;
+            border-color: #93c5fd;
+        }
+
+        .doc-title {
+            font-size: 14px;
+            font-weight: 800;
+            word-break: break-word;
+        }
+
+        .doc-meta {
+            font-size: 11px;
+            color: #cbd5e1;
+            margin-top: 4px;
+        }
+
+        .main {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .topbar {
+            padding: 14px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .selected-doc {
+            font-weight: 900;
+            font-size: 17px;
+        }
+
+        .selected-doc span {
+            display: block;
+            color: #64748b;
+            font-weight: 500;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .status-pill {
+            font-size: 12px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: #e0f2fe;
+            color: #075985;
+            white-space: nowrap;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 26px;
+        }
+
+        .message {
+            max-width: 880px;
+            margin-bottom: 18px;
+            display: flex;
+        }
+
+        .message.user {
+            margin-left: auto;
+            justify-content: flex-end;
+        }
+
+        .bubble {
+            padding: 15px 17px;
+            border-radius: 17px;
+            line-height: 1.65;
+            white-space: pre-wrap;
+            font-size: 15.5px;
+        }
+
+        .user .bubble {
+            background: #2563eb;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .assistant .bubble {
+            background: white;
+            border: 1px solid #e5e7eb;
+            color: #111827;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .empty {
+            max-width: 720px;
+            margin: 70px auto;
+            text-align: center;
+            color: #475569;
+        }
+
+        .empty h1 {
+            color: #0f172a;
+        }
+
+        .composer {
+            padding: 16px 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .composer-box {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        textarea {
+            flex: 1;
+            resize: none;
+            min-height: 54px;
+            max-height: 160px;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 15px;
+        }
+
+        select {
+            width: 100%;
+            padding: 9px;
+            border-radius: 9px;
+            border: 1px solid #cbd5e1;
+            background: white;
+        }
+
+        .right-panel {
+            background: white;
+            border-left: 1px solid #e5e7eb;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            margin-bottom: 20px;
+        }
+
+        .panel-section h3 {
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .toggle-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .metric {
+            display: inline-block;
+            background: #eef2ff;
+            color: #3730a3;
+            padding: 5px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            margin: 3px;
+        }
+
+        .citation-card {
+            border: 1px solid #e5e7eb;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 11px;
+            font-size: 13px;
+        }
+
+        .citation-card b {
+            color: #0f172a;
+        }
+
+        .source-line {
+            margin-top: 5px;
+            color: #475569;
+        }
+
+        .preview-text {
+            margin-top: 8px;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            z-index: 50;
+        }
+
+        .modal-box {
+            background: white;
+            width: min(760px, 96vw);
+            max-height: 82vh;
+            overflow-y: auto;
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.28);
+        }
+
+        .modal-pre {
+            background: #0f172a;
+            color: #e5e7eb;
+            padding: 14px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 13px;
+        }
+
+        .danger-zone {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 14px;
+        }
+
+        @media (max-width: 1100px) {
+            .app { grid-template-columns: 290px 1fr; }
+            .right-panel { display: none; }
+        }
+
+        @media (max-width: 760px) {
+            .app { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="brand">GraphResearcher</div>
+
+        <div class="upload-box">
+            <b>Upload document</b>
+            <p class="small">Upload a PDF/document and start chatting. No document ID needed.</p>
+            <input id="fileInput" type="file">
+            <button class="full green" onclick="uploadDocument()">Upload & Select</button>
+            <button class="full secondary" onclick="refreshDocuments()">Refresh Documents</button>
+        </div>
+
+        <div class="small" style="margin-bottom: 8px;">My Documents</div>
+        <div id="documentList"></div>
+
+        <hr style="border-color: rgba(255,255,255,0.15); margin: 18px 0;">
+
+        <button class="full secondary" onclick="newChat()">+ New Chat</button>
+        <button class="full secondary" onclick="window.location.href='/'">Home</button>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div class="selected-doc" id="selectedDocTitle">
+                No document selected
+                <span>Upload or select a document from the left sidebar.</span>
+            </div>
+            <span id="appStatus" class="status-pill">Ready</span>
+        </div>
+
+        <div id="messages" class="messages"></div>
+
+        <div class="composer">
+            <div class="composer-box">
+                <textarea id="messageInput" placeholder="Ask anything about the selected document..." onkeydown="handleKeyDown(event)"></textarea>
+                <button onclick="sendMessage()">Send</button>
+            </div>
+            <div class="small" style="margin-top: 8px;">
+                Example: “Summarize this”, “Explain step by step”, “What are the key points?”, “Give evidence”.
+            </div>
+        </div>
+    </main>
+
+    <aside class="right-panel">
+        <div class="panel-section">
+            <h3>Selected Document</h3>
+            <div id="docDetails" class="small">No document selected.</div>
+        </div>
+
+        <div class="panel-section">
+            <h3>Answer Style</h3>
+            <select id="answerStyle">
+                <option value="detailed" selected>Detailed</option>
+                <option value="step_by_step">Step-by-step</option>
+                <option value="concise">Concise</option>
+                <option value="research">Research style</option>
+            </select>
+        </div>
+
+        <div class="panel-section">
+            <h3>GraphRAG Settings</h3>
+            <div class="toggle-row">
+                <label><input type="checkbox" id="useLLM" checked> Use LLM</label>
+                <label><input type="checkbox" id="useReranker" checked> Use reranker</label>
+                <label><input type="checkbox" id="useGraph" checked> Use graph context</label>
+                <label><input type="checkbox" id="useGraphRetrieval" checked> Use graph retrieval fusion</label>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <h3>Actions</h3>
+            <button class="green" onclick="buildGraph()">Build Graph</button>
+            <button class="secondary" onclick="openGraph()">Open Graph</button>
+        </div>
+
+        <div class="panel-section">
+            <h3>Last Answer Metrics</h3>
+            <div id="metricsBox">
+                <span class="metric">No answer yet</span>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <h3>Sources</h3>
+            <div id="citationsBox" class="small">Sources will appear here after an answer.</div>
+        </div>
+
+        <div class="panel-section danger-zone">
+            <h3>Danger Zone</h3>
+            <button class="red" onclick="deleteSelectedDocument()">Delete Selected Document</button>
+        </div>
+    </aside>
+</div>
+
+<div id="sourceModal" class="modal">
+    <div class="modal-box">
+        <h2 id="modalTitle">Source details</h2>
+        <div id="modalBody"></div>
+        <br>
+        <button onclick="closeSourceModal()">Close</button>
+    </div>
+</div>
+
+<script>
+let documents = JSON.parse(localStorage.getItem("graphrag_documents") || "[]");
+let selectedDocumentId = localStorage.getItem("graphrag_selected_document_id") || null;
+let conversations = JSON.parse(localStorage.getItem("graphrag_conversations_v2") || "{}");
+let lastSources = [];
+
+function saveDocuments() {
+    localStorage.setItem("graphrag_documents", JSON.stringify(documents));
+    if (selectedDocumentId) {
+        localStorage.setItem("graphrag_selected_document_id", selectedDocumentId);
+    }
+}
+
+function saveConversations() {
+    localStorage.setItem("graphrag_conversations_v2", JSON.stringify(conversations));
+}
+
+function setStatus(text) {
+    document.getElementById("appStatus").textContent = text;
+}
+
+function getSelectedDocument() {
+    return documents.find(d => d.id === selectedDocumentId) || null;
+}
+
+function parseDocumentId(data) {
+    return (
+        data.document_id ||
+        data.id ||
+        data.doc_id ||
+        data.documentId ||
+        data.document?.document_id ||
+        data.document?.id ||
+        data.file?.document_id ||
+        data.result?.document_id ||
+        data.data?.document_id
+    );
+}
+
+async function tryEndpoints(candidates, optionsFactory) {
+    let lastError = null;
+
+    for (const candidate of candidates) {
+        try {
+            const response = await fetch(candidate, optionsFactory(candidate));
+            const contentType = response.headers.get("content-type") || "";
+            const data = contentType.includes("application/json") ? await response.json() : await response.text();
+
+            if (response.ok) {
+                return { ok: true, endpoint: candidate, data };
+            }
+
+            lastError = { endpoint: candidate, status: response.status, data };
+        } catch (error) {
+            lastError = { endpoint: candidate, error: error.message };
+        }
+    }
+
+    return { ok: false, error: lastError };
+}
+
+function renderDocuments() {
+    const list = document.getElementById("documentList");
+    list.innerHTML = "";
+
+    if (documents.length === 0) {
+        list.innerHTML = `<div class="small">No documents yet. Upload one above.</div>`;
+    }
+
+    documents.forEach(doc => {
+        const div = document.createElement("div");
+        div.className = "doc-card" + (doc.id === selectedDocumentId ? " active" : "");
+        div.onclick = () => selectDocument(doc.id);
+
+        div.innerHTML = `
+            <div class="doc-title">${doc.name || "Untitled document"}</div>
+            <div class="doc-meta">${doc.status || "uploaded"} • ${doc.graphStatus || "graph not built"}</div>
+        `;
+
+        list.appendChild(div);
+    });
+
+    renderSelectedDocument();
+}
+
+function renderSelectedDocument() {
+    const doc = getSelectedDocument();
+    const title = document.getElementById("selectedDocTitle");
+    const details = document.getElementById("docDetails");
+
+    if (!doc) {
+        title.innerHTML = `No document selected <span>Upload or select a document from the left sidebar.</span>`;
+        details.textContent = "No document selected.";
+        renderMessages();
+        return;
+    }
+
+    title.innerHTML = `${doc.name || "Untitled document"} <span>Ready for document chat.</span>`;
+
+    details.innerHTML = `
+        <b>Name:</b> ${doc.name || "Untitled"}<br>
+        <b>Status:</b> ${doc.status || "uploaded"}<br>
+        <b>Graph:</b> ${doc.graphStatus || "not built"}<br>
+        <b>Uploaded:</b> ${doc.uploadedAt || "unknown"}
+    `;
+
+    renderMessages();
+}
+
+function selectDocument(id) {
+    selectedDocumentId = id;
+    saveDocuments();
+    renderDocuments();
+}
+
+function newChat() {
+    if (!selectedDocumentId) {
+        alert("Select a document first.");
+        return;
+    }
+
+    conversations[selectedDocumentId] = [];
+    saveConversations();
+    renderMessages();
+}
+
+function getConversation() {
+    if (!selectedDocumentId) return [];
+
+    if (!conversations[selectedDocumentId]) {
+        conversations[selectedDocumentId] = [];
+    }
+
+    return conversations[selectedDocumentId];
+}
+
+function renderMessages() {
+    const box = document.getElementById("messages");
+    const doc = getSelectedDocument();
+
+    if (!doc) {
+        box.innerHTML = `
+            <div class="empty">
+                <h1>Upload a document to start</h1>
+                <p>No document ID needed. Upload a file from the left sidebar, then chat normally.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const convo = getConversation();
+
+    if (convo.length === 0) {
+        box.innerHTML = `
+            <div class="empty">
+                <h1>Chat with ${doc.name || "your document"}</h1>
+                <p>Ask a question below. Answers will include citation-backed sources.</p>
+            </div>
+        `;
+        return;
+    }
+
+    box.innerHTML = "";
+
+    convo.forEach(msg => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "message " + msg.role;
+
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.textContent = msg.content;
+
+        wrapper.appendChild(bubble);
+        box.appendChild(wrapper);
+    });
+
+    box.scrollTop = box.scrollHeight;
+}
+
+async function uploadDocument() {
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Choose a file first.");
+        return;
+    }
+
+    setStatus("Uploading...");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const result = await tryEndpoints(
+        ["/documents/upload", "/upload", "/documents", "/api/documents/upload"],
+        () => ({ method: "POST", body: formData })
+    );
+
+    if (!result.ok) {
+        setStatus("Upload failed");
+        alert("Upload failed. Error: " + JSON.stringify(result.error));
+        return;
+    }
+
+    const documentId = parseDocumentId(result.data);
+
+    if (!documentId) {
+        setStatus("Upload returned no document");
+        alert("Upload worked but document ID was not found in response.");
+        return;
+    }
+
+    const doc = {
+        id: documentId,
+        name: file.name,
+        status: "uploaded",
+        graphStatus: "not built",
+        uploadedAt: new Date().toLocaleString()
+    };
+
+    const existingIndex = documents.findIndex(d => d.id === documentId);
+
+    if (existingIndex >= 0) documents[existingIndex] = doc;
+    else documents.unshift(doc);
+
+    selectedDocumentId = documentId;
+    saveDocuments();
+    renderDocuments();
+
+    setStatus("Uploaded");
+    await autoIndexDocument(documentId);
+    await buildGraph(true);
+}
+
+async function autoIndexDocument(documentId) {
+    setStatus("Indexing...");
+
+    const result = await tryEndpoints(
+        [
+            `/documents/${documentId}/index`,
+            `/documents/${documentId}/process`,
+            `/documents/${documentId}/ingest`,
+            `/index/${documentId}`
+        ],
+        () => ({ method: "POST" })
+    );
+
+    const doc = documents.find(d => d.id === documentId);
+
+    if (doc) {
+        doc.status = result.ok ? "indexed" : "uploaded";
+        saveDocuments();
+        renderDocuments();
+    }
+
+    setStatus(result.ok ? "Indexed" : "Uploaded");
+}
+
+async function buildGraph(silent = false) {
+    const doc = getSelectedDocument();
+
+    if (!doc) {
+        if (!silent) alert("Select a document first.");
+        return;
+    }
+
+    setStatus("Building graph...");
+
+    try {
+        const response = await fetch(`/documents/${doc.id}/graph/build`, { method: "POST" });
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(JSON.stringify(data));
+
+        doc.graphStatus = "graph built";
+        doc.graphData = {
+            entities: data.total_entities ?? data.entity_count ?? null,
+            relations: data.total_relations ?? data.relation_count ?? null
+        };
+
+        saveDocuments();
+        renderDocuments();
+
+        document.getElementById("metricsBox").innerHTML = `
+            <span class="metric">graph built</span>
+            <span class="metric">entities: ${doc.graphData.entities ?? "NA"}</span>
+            <span class="metric">relations: ${doc.graphData.relations ?? "NA"}</span>
+        `;
+
+        setStatus("Graph ready");
+
+    } catch (error) {
+        doc.graphStatus = "graph not built";
+        saveDocuments();
+        renderDocuments();
+
+        setStatus("Graph skipped");
+        if (!silent) alert("Graph build failed: " + error.message);
+    }
+}
+
+function openGraph() {
+    const doc = getSelectedDocument();
+
+    if (!doc) {
+        alert("Select a document first.");
+        return;
+    }
+
+    window.open(`/documents/${doc.id}/graph/view`, "_blank");
+}
+
+async function deleteSelectedDocument() {
+    const doc = getSelectedDocument();
+
+    if (!doc) {
+        alert("Select a document first.");
+        return;
+    }
+
+    if (!confirm(`Delete "${doc.name}" from this workspace?`)) return;
+
+    setStatus("Deleting...");
+
+    await tryEndpoints(
+        [`/documents/${doc.id}`, `/documents/${doc.id}/delete`, `/api/documents/${doc.id}`],
+        () => ({ method: "DELETE" })
+    );
+
+    documents = documents.filter(d => d.id !== doc.id);
+    delete conversations[doc.id];
+
+    selectedDocumentId = documents.length > 0 ? documents[0].id : null;
+
+    saveDocuments();
+    saveConversations();
+    renderDocuments();
+    renderMessages();
+
+    setStatus("Deleted");
+}
+
+function refreshDocuments() {
+    renderDocuments();
+    setStatus("Refreshed");
+}
+
+function handleKeyDown(event) {
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+}
+
+function getAnswerStyleInstruction() {
+    const style = document.getElementById("answerStyle").value;
+
+    if (style === "concise") {
+        return "Answer concisely, but still include citations after important claims.";
+    }
+
+    if (style === "step_by_step") {
+        return "Answer step by step. Use numbered steps. Explain the reasoning clearly. Include citations after key points.";
+    }
+
+    if (style === "research") {
+        return "Answer in a research-style format: direct answer, evidence, interpretation, limitations. Include citations after key claims.";
+    }
+
+    return "Answer in a detailed but readable format. Start with a direct answer, then explain important points with evidence. Include citations after key claims.";
+}
+
+function buildContextualQuery(currentQuestion) {
+    const convo = getConversation().slice(-6);
+    const instruction = getAnswerStyleInstruction();
+
+    let context = "";
+
+    if (convo.length > 0) {
+        context = convo
+            .map(m => `${m.role}: ${m.content}`)
+            .join("\\n");
+    }
+
+    return `${instruction}\\n\\nConversation so far:\\n${context}\\n\\nCurrent user question:\\n${currentQuestion}`;
+}
+
+function updateMetrics(data) {
+    const fusion = data.retrieval_fusion || {};
+    const graph = data.graph_context || {};
+
+    document.getElementById("metricsBox").innerHTML = `
+        <span class="metric">strategy: ${data.answer_strategy || "NA"}</span>
+        <span class="metric">LLM: ${data.used_llm}</span>
+        <span class="metric">graph: ${data.graph_used}</span>
+        <span class="metric">graph available: ${graph.graph_available}</span>
+        <span class="metric">fusion: ${fusion.fusion_used}</span>
+        <span class="metric">graph added: ${fusion.graph_added_count ?? "NA"}</span>
+        <span class="metric">graph supported: ${fusion.graph_supported_count ?? "NA"}</span>
+    `;
+}
+
+function valueFrom(obj, keys, fallback = "Not available") {
+    for (const key of keys) {
+        if (obj && obj[key] !== undefined && obj[key] !== null && obj[key] !== "") {
+            return obj[key];
+        }
+    }
+
+    if (obj && obj.metadata) {
+        for (const key of keys) {
+            if (obj.metadata[key] !== undefined && obj.metadata[key] !== null && obj.metadata[key] !== "") {
+                return obj.metadata[key];
+            }
+        }
+    }
+
+    return fallback;
+}
+
+function buildSources(data) {
+    const selectedDoc = getSelectedDocument();
+    const sources = [];
+
+    const citations = data.citations || [];
+    citations.forEach(c => sources.push(c));
+
+    const fused = data.retrieval_fusion?.fused_results || [];
+    fused.forEach(r => sources.push(r));
+
+    const normalSources = data.sources || data.source_chunks || data.retrieved_sources || [];
+    normalSources.forEach(s => sources.push(s));
+
+    const seen = new Set();
+    const cleaned = [];
+
+    sources.forEach((src, index) => {
+        const sourceId = valueFrom(src, ["source_id", "id", "citation_id"], "S" + (index + 1));
+        const chunkId = valueFrom(src, ["chunk_id", "source_chunk_id", "chunk"], sourceId);
+        const key = sourceId + "|" + chunkId;
+
+        if (seen.has(key)) return;
+        seen.add(key);
+
+        cleaned.push({
+            source_id: sourceId,
+            document_name: valueFrom(src, ["document_name", "source_file_name", "file_name", "filename", "document_title"], selectedDoc?.name || "Selected document"),
+            page: valueFrom(src, ["page_number", "page", "page_no"], "Not available"),
+            chunk_id: chunkId,
+            preview: valueFrom(src, ["text_preview", "preview", "chunk_preview", "content_preview", "text", "content"], "Preview not available"),
+            raw: src
+        });
+    });
+
+    return cleaned;
+}
+
+function updateCitations(data) {
+    const box = document.getElementById("citationsBox");
+    lastSources = buildSources(data);
+
+    if (lastSources.length === 0) {
+        box.textContent = "No source details returned.";
+        return;
+    }
+
+    box.innerHTML = "";
+
+    lastSources.forEach((source, index) => {
+        const card = document.createElement("div");
+        card.className = "citation-card";
+
+        card.innerHTML = `
+            <b>Source ${index + 1}: ${source.source_id}</b>
+            <div class="source-line"><b>Document:</b> ${source.document_name}</div>
+            <div class="source-line"><b>Page:</b> ${source.page}</div>
+            <div class="source-line"><b>Chunk:</b> ${source.chunk_id}</div>
+            <div class="preview-text">${String(source.preview).slice(0, 260)}</div>
+            <br>
+            <button class="light" onclick="openSourceModal(${index})">View source details</button>
+        `;
+
+        box.appendChild(card);
+    });
+}
+
+function openSourceModal(index) {
+    const source = lastSources[index];
+
+    if (!source) return;
+
+    document.getElementById("modalTitle").textContent = `Source ${index + 1}: ${source.source_id}`;
+
+    document.getElementById("modalBody").innerHTML = `
+        <p><b>Document:</b> ${source.document_name}</p>
+        <p><b>Page:</b> ${source.page}</p>
+        <p><b>Chunk:</b> ${source.chunk_id}</p>
+        <h3>Preview</h3>
+        <div class="modal-pre">${String(source.preview)}</div>
+        <h3>Raw source metadata</h3>
+        <div class="modal-pre">${JSON.stringify(source.raw, null, 2)}</div>
+    `;
+
+    document.getElementById("sourceModal").style.display = "flex";
+}
+
+function closeSourceModal() {
+    document.getElementById("sourceModal").style.display = "none";
+}
+
+async function sendMessage() {
+    const doc = getSelectedDocument();
+    const input = document.getElementById("messageInput");
+    const userText = input.value.trim();
+
+    if (!doc) {
+        alert("Upload or select a document first.");
+        return;
+    }
+
+    if (!userText) return;
+
+    const convo = getConversation();
+
+    convo.push({
+        role: "user",
+        content: userText,
+        createdAt: new Date().toISOString()
+    });
+
+    input.value = "";
+    saveConversations();
+    renderMessages();
+
+    setStatus("Thinking...");
+
+    const payload = {
+        query: buildContextualQuery(userText),
+        document_id: doc.id,
+        top_k: 7,
+        retrieval_mode: "hybrid",
+        use_reranker: document.getElementById("useReranker").checked,
+        use_llm: document.getElementById("useLLM").checked,
+        use_graph: document.getElementById("useGraph").checked,
+        graph_entity_limit: 10,
+        use_graph_retrieval: document.getElementById("useGraphRetrieval").checked,
+        graph_retrieval_top_k: 6
+    };
+
+    try {
+        const response = await fetch("/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(JSON.stringify(data));
+        }
+
+        const answer = data.answer || "I could not generate an answer.";
+
+        convo.push({
+            role: "assistant",
+            content: answer,
+            createdAt: new Date().toISOString(),
+            raw: data
+        });
+
+        saveConversations();
+        renderMessages();
+        updateMetrics(data);
+        updateCitations(data);
+
+        setStatus("Ready");
+
+    } catch (error) {
+        convo.push({
+            role: "assistant",
+            content: "Error: " + error.message,
+            createdAt: new Date().toISOString()
+        });
+
+        saveConversations();
+        renderMessages();
+
+        setStatus("Error");
+    }
+}
+
+renderDocuments();
+</script>
+</body>
+</html>
+"""
