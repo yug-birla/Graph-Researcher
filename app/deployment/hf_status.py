@@ -6213,3 +6213,8 @@ window.sendMessage = async function() {
         html = html.replace("</body>", js + "\n</body>")
 
     return html
+# =====================================================
+# Phase 38 final stable UI export
+# This keeps old helper functions but forces / and /app to use the clean final UI.
+# =====================================================
+from app.product.final_product_ui import get_home_html, get_product_app_html
