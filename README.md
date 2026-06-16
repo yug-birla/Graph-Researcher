@@ -1,4 +1,14 @@
-# GraphResearcher — Citation-Grounded GraphRAG Document Intelligence Platform
+﻿---
+title: GraphResearcher
+emoji: 📚
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+# GraphResearcher â€” Citation-Grounded GraphRAG Document Intelligence Platform
 
 **GraphResearcher** is a document-question answering and research assistant web application built around **RAG + GraphRAG + source verification**.  
 It lets users upload documents, ask natural-language questions, inspect citations, open exact source chunks, view document graphs, compare two documents, submit feedback, and monitor the system through a secure admin dashboard.
@@ -499,3 +509,4 @@ GraphResearcher is a full-stack AI application for document-based question answe
 The app keeps the main answer clean and shows sources separately, so users can verify the answer using the right-side source panel or open the exact source detail page. It also includes graph visualization to inspect relationships inside the document and a comparison mode to compare two uploaded documents.
 
 For admin use, the project includes a secure monitoring dashboard that tracks runtime storage, available routes, security configuration, feedback, and audit logs. Feedback can be saved locally and permanently backed up to a private Hugging Face Dataset. The project is deployed on Hugging Face Spaces and designed as a practical, resume-worthy GraphRAG application with honest limitations around temporary runtime storage and OCR support.
+
