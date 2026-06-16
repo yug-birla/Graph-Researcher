@@ -730,39 +730,229 @@ function renderReadableAnswer(text) {
     return blocks.map(block => `<p>${escapeHtml(block)}</p>`).join("");
 }
 
-function renderAnswerHtml(question, data, doc) {
-    let answer = String(data.answer || "I could not generate an answer.").trim();
+function getSelectedAnswerStyle() {
+    const el = document.getElementById("answerStyle");
+    return el ? el.value : "detailed";
+}
 
-    if (answer.toLowerCase().includes("i could not find relevant indexed sources")) {
+function cleanMainAnswerText(answer) {
+    let text = String(answer || "").trim();
+
+    text = text.replace(/\[S\d+\]/g, "");
+    text = text.replace(/Vectorless_RAG_Master_Guide\.pdf/gi, "");
+    text = text.replace(/Evidence used[\s\S]*$/i, "");
+    text = text.replace(/Sources used[\s\S]*$/i, "");
+    text = text.replace(/Source\s+\d+[\s\S]*$/i, "");
+    text = text.replace(/[ \t]+/g, " ");
+    text = text.replace(/\n{3,}/g, "\n\n");
+
+    return text.trim();
+}
+
+function looksLikeRawChunkDump(text) {
+    const lower = String(text || "").toLowerCase();
+
+    const rawSignals = [
+        "chunk_id",
+        "document_id",
+        "entity_id",
+        "source_path",
+        "class document",
+        "attributes document",
+        "this document contains this chunk",
+        "this chunk belongs",
+        "page 25 of",
+        "page 32 of"
+    ];
+
+    return rawSignals.some(x => lower.includes(x));
+}
+
+function countWords(text) {
+    return String(text || "").split(/\s+/).filter(Boolean).length;
+}
+
+function cleanSourcePreviewForAnswer(text) {
+    let value = String(text || "").trim();
+
+    value = value.replace(/chunk_id[:\s]+[A-Za-z0-9_\-]+/gi, "");
+    value = value.replace(/document_id[:\s]+[A-Za-z0-9_\-]+/gi, "");
+    value = value.replace(/entity_id[:\s]+[A-Za-z0-9_\-]+/gi, "");
+    value = value.replace(/source_path[:\s]+[^\n]+/gi, "");
+    value = value.replace(/\s+/g, " ");
+    value = value.replace(/Page\s+\d+\s+of\s+\d+/gi, "");
+
+    return value.trim();
+}
+
+function collectSourceSentences(data, doc) {
+    const sources = buildSources(data, doc);
+    const sentences = [];
+    const seen = new Set();
+
+    sources.forEach(src => {
+        const preview = cleanSourcePreviewForAnswer(src.preview);
+
+        preview
+            .split(/(?<=[.!?])\s+/)
+            .map(x => x.trim())
+            .filter(x => x.length > 35 && x.length < 260)
+            .forEach(sentence => {
+                const key = sentence.toLowerCase();
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    sentences.push(sentence);
+                }
+            });
+    });
+
+    return sentences.slice(0, 10);
+}
+
+function buildExpandedAnswerFromSources(question, rawAnswer, data, doc, style) {
+    const cleanAnswer = cleanMainAnswerText(rawAnswer);
+    const sourceSentences = collectSourceSentences(data, doc);
+    const questionLower = String(question || "").toLowerCase();
+
+    const wantsSteps =
+        questionLower.includes("step") ||
+        questionLower.includes("build") ||
+        questionLower.includes("procedure") ||
+        questionLower.includes("sequential") ||
+        style === "step_by_step";
+
+    let basePoints = [];
+
+    if (cleanAnswer && !looksLikeRawChunkDump(cleanAnswer)) {
+        basePoints = cleanAnswer
+            .split(/(?<=[.!?])\s+/)
+            .map(x => x.trim())
+            .filter(x => x.length > 25);
+    }
+
+    const allPoints = [...basePoints, ...sourceSentences]
+        .map(x => x.trim())
+        .filter(Boolean);
+
+    const unique = [];
+    const seen = new Set();
+
+    allPoints.forEach(point => {
+        const key = point.toLowerCase().slice(0, 120);
+        if (!seen.has(key)) {
+            seen.add(key);
+            unique.push(point);
+        }
+    });
+
+    if (!unique.length) {
+        return {
+            title: "Answer",
+            blocks: ["I found related chunks, but the answer was too weak to expand cleanly. Please re-index the document and ask again."],
+            ordered: false
+        };
+    }
+
+    if (style === "concise") {
+        return {
+            title: "Concise answer",
+            blocks: unique.slice(0, 3),
+            ordered: false
+        };
+    }
+
+    if (style === "research") {
+        return {
+            title: "Research-style answer",
+            blocks: [
+                "Overview: " + unique[0],
+                "Key details: " + unique.slice(1, 4).join(" "),
+                "Interpretation: The document connects these ideas as part of the system design and implementation flow."
+            ].filter(x => x.length > 20),
+            ordered: false
+        };
+    }
+
+    if (wantsSteps) {
+        return {
+            title: "Step-by-step answer",
+            blocks: unique.slice(0, 8),
+            ordered: true
+        };
+    }
+
+    return {
+        title: "Detailed answer",
+        blocks: unique.slice(0, 7),
+        ordered: false
+    };
+}
+
+function renderBlocksAsHtml(blocks, ordered) {
+    if (!blocks || !blocks.length) return "<p>No answer generated.</p>";
+
+    if (ordered) {
+        let html = "<ol>";
+        blocks.forEach(block => {
+            html += `<li>${escapeHtml(block.replace(/^\d+\.\s+/, ""))}</li>`;
+        });
+        html += "</ol>";
+        return html;
+    }
+
+    if (blocks.length >= 3) {
+        let html = "<ul>";
+        blocks.forEach(block => {
+            html += `<li>${escapeHtml(block)}</li>`;
+        });
+        html += "</ul>";
+        return html;
+    }
+
+    return blocks.map(block => `<p>${escapeHtml(block)}</p>`).join("");
+}
+
+function renderAnswerHtml(question, data, doc) {
+    const style = getSelectedAnswerStyle();
+    const rawAnswer = String(data.answer || "I could not generate an answer.").trim();
+
+    if (rawAnswer.toLowerCase().includes("i could not find relevant indexed sources")) {
         return `<div class="answer-card">
             <h2>I could not find indexed evidence</h2>
-            <p>This usually means the backend does not currently have indexed chunks for this document.</p>
+            <p>The backend does not currently have indexed chunks for this document.</p>
             <p>Use <b>Clear Workspace Cache</b>, upload the document again, then ask once more.</p>
         </div>`;
     }
 
-    answer = cleanMainAnswerText(answer);
+    const cleaned = cleanMainAnswerText(rawAnswer);
+    const shouldExpand =
+        countWords(cleaned) < 140 ||
+        looksLikeRawChunkDump(cleaned) ||
+        style === "step_by_step" ||
+        style === "research";
 
-    if (!answer) {
-        answer = "I found related sources, but the generated answer was empty. Please re-index the document and ask again.";
+    let finalAnswer;
+
+    if (shouldExpand) {
+        finalAnswer = buildExpandedAnswerFromSources(question, rawAnswer, data, doc, style);
+    } else {
+        finalAnswer = {
+            title:
+                style === "concise" ? "Concise answer" :
+                style === "research" ? "Research-style answer" :
+                style === "step_by_step" ? "Step-by-step answer" :
+                "Detailed answer",
+            blocks: cleaned
+                .split(/\n+/)
+                .map(x => x.trim())
+                .filter(Boolean),
+            ordered: style === "step_by_step"
+        };
     }
-
-    // If backend returned raw chunk text, do not show it as final polished answer.
-    // Give a clean fallback instead and keep actual evidence in the right panel.
-    if (looksLikeRawChunkDump(answer)) {
-        answer = "The document discusses a Vectorless RAG system and explains how to build it using document parsing, unified document models, chunking, metadata, graph extraction, retrieval, answer generation, citations, and evaluation. For exact proof, use the source cards on the right panel.";
-    }
-
-    const questionLower = String(question || "").toLowerCase();
-    const isStepQuestion =
-        questionLower.includes("step") ||
-        questionLower.includes("build") ||
-        questionLower.includes("procedure") ||
-        questionLower.includes("sequential");
 
     let html = `<div class="answer-card">`;
-    html += `<h2>${isStepQuestion ? "Steps" : "Answer"}</h2>`;
-    html += renderReadableAnswer(answer);
+    html += `<h2>${escapeHtml(finalAnswer.title)}</h2>`;
+    html += renderBlocksAsHtml(finalAnswer.blocks, finalAnswer.ordered);
     html += `</div>`;
 
     return html;
