@@ -39,33 +39,71 @@ def infer_role(email: str) -> str:
     return "user"
 
 
+def get_session_user(request: Request):
+    try:
+        return request.session.get("user")
+    except Exception:
+        return None
+
+
 def get_current_user_from_request(request: Request) -> Dict[str, Any]:
-    email = normalize_email(request.headers.get("x-user-email"))
-    name = request.headers.get("x-user-name")
+    """
+    Preferred:
+    - Session cookie from /login or Google OAuth
 
-    if not email:
-        return {
-            "authenticated": False,
-            "user_id": None,
-            "email": None,
-            "name": "Guest",
-            "role": "guest",
-            "auth_provider": "none"
-        }
+    Temporary dev fallback:
+    - X-User-Email header, controlled by ALLOW_HEADER_AUTH
+    """
 
-    role = infer_role(email)
-    user_id = make_user_id(email)
+    session_user = get_session_user(request)
 
-    user = upsert_user(
-        user_id=user_id,
-        email=email,
-        name=name or email.split("@")[0],
-        role=role,
-        auth_provider="header_dev"
-    )
+    if session_user and session_user.get("email"):
+        email = normalize_email(session_user.get("email"))
+        role = infer_role(email)
+        user_id = session_user.get("user_id") or make_user_id(email)
 
-    user["authenticated"] = True
-    return user
+        user = upsert_user(
+            user_id=user_id,
+            email=email,
+            name=session_user.get("name") or email.split("@")[0],
+            role=role,
+            auth_provider=session_user.get("auth_provider", "session")
+        )
+
+        user["authenticated"] = True
+        return user
+
+    allow_header_auth = os.getenv("ALLOW_HEADER_AUTH", "true").strip().lower() in {
+        "1", "true", "yes", "y"
+    }
+
+    if allow_header_auth:
+        email = normalize_email(request.headers.get("x-user-email"))
+        name = request.headers.get("x-user-name")
+
+        if email:
+            role = infer_role(email)
+            user_id = make_user_id(email)
+
+            user = upsert_user(
+                user_id=user_id,
+                email=email,
+                name=name or email.split("@")[0],
+                role=role,
+                auth_provider="header_dev"
+            )
+
+            user["authenticated"] = True
+            return user
+
+    return {
+        "authenticated": False,
+        "user_id": None,
+        "email": None,
+        "name": "Guest",
+        "role": "guest",
+        "auth_provider": "none"
+    }
 
 
 def require_authenticated_user(request: Request) -> Dict[str, Any]:
@@ -74,7 +112,7 @@ def require_authenticated_user(request: Request) -> Dict[str, Any]:
     if not user.get("authenticated"):
         raise HTTPException(
             status_code=401,
-            detail="Authentication required."
+            detail="Authentication required. Please login first."
         )
 
     return user

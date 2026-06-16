@@ -1,4 +1,19 @@
 
+import os
+from fastapi import Request, Query
+from fastapi.responses import HTMLResponse
+from starlette.middleware.sessions import SessionMiddleware
+from app.product.login_ui import get_login_html
+from app.product.oauth_service import (
+    get_oauth_status,
+    start_google_login,
+    finish_google_login,
+    dev_session_login,
+    clear_session,
+    get_session_payload
+)
+
+
 from fastapi import Request, Query
 from fastapi.responses import HTMLResponse
 from app.product.auth_service import get_current_user_from_request, require_admin_user, dev_login_user
@@ -91,6 +106,14 @@ app = FastAPI(
     description="A production-grade multimodal GraphRAG research assistant",
     version=settings.APP_VERSION
 )
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv('SESSION_SECRET_KEY', 'dev-change-this-session-secret'),
+    same_site='lax',
+    https_only=False
+)
+
 
 
 if settings.ENABLE_STATIC_ASSETS:
@@ -759,3 +782,48 @@ def admin_conversations(
 def admin_system(request: Request):
     require_admin_user(request)
     return get_admin_system_summary()
+
+
+# OAuth login endpoints
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page():
+    return get_login_html()
+
+
+@app.get("/auth/oauth-status")
+def auth_oauth_status():
+    return get_oauth_status()
+
+
+@app.get("/auth/session")
+def auth_session(request: Request):
+    return get_session_payload(request)
+
+
+@app.get("/auth/google/login")
+async def auth_google_login(request: Request):
+    return await start_google_login(request)
+
+
+@app.get("/auth/google/callback")
+async def auth_google_callback(request: Request):
+    return await finish_google_login(request)
+
+
+@app.get("/auth/dev-session")
+def auth_dev_session(
+    request: Request,
+    email: str = Query(..., min_length=3),
+    name: str = Query(None)
+):
+    return dev_session_login(
+        request=request,
+        email=email,
+        name=name
+    )
+
+
+@app.get("/auth/logout")
+def auth_logout(request: Request):
+    return clear_session(request)
