@@ -18,10 +18,14 @@ The project is built around the idea that a document chatbot should not only ans
 </p>
 
 ---
-![Demo](images/Screenshot%2026-06-17&001511.png)
-![Demo](images/Screenshot%2026-06-17%001548.png)
-![Demo](images/Screenshot%2026-06-17%001604.png)
-![Demo](images/Screenshot%2026-06-17%001840.png)
+![Demo](images/demo1.png)
+
+![Demo](images/demo2.png)
+
+![Demo](images/demo3.png)
+
+![Demo](images/demo4.png)
+
 ---
 ## Project Highlights
 
