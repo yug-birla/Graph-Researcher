@@ -41,7 +41,7 @@ from app.generation.llm_service import get_llm_status, get_loaded_llm_info
 from app.deployment.hf_status import (
     get_deployment_health,
     get_deployment_config,
-    get_demo_html
+    get_demo_html, get_graphrag_demo_html
 )
 from app.evaluation.retrieval_eval_storage import (
     load_retrieval_test_cases,
@@ -532,3 +532,10 @@ def evaluate_graph_fusion_batch_for_document(
         graph_retrieval_top_k=graph_retrieval_top_k,
         compact=compact
     )
+
+
+# GraphRAG demo UI endpoint
+
+@app.get("/graphrag-demo", response_class=HTMLResponse)
+def graphrag_demo_page():
+    return get_graphrag_demo_html()
