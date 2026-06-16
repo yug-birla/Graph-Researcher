@@ -1,3 +1,4 @@
+from app.generation.answer_quality_enhancer import safe_enhance_answer_for_response
 from app.graph.graph_retrieval_fusion import fuse_retrieval_results_with_graph
 from app.graph.graph_context_service import build_graph_context_for_query
 import re
@@ -119,7 +120,7 @@ def answer_question(
 
         return {
             "query": query,
-            "answer": answer,
+            "answer": safe_enhance_answer_for_response(locals()),
             "retrieval_mode": retrieval_mode,
             "question_type": question_type,
             "used_reranker": use_reranker,
@@ -197,7 +198,7 @@ def answer_question(
 
     return {
         "query": query,
-        "answer": answer,
+        "answer": safe_enhance_answer_for_response(locals()),
         "retrieval_mode": retrieval_mode,
         "question_type": question_type,
         "used_reranker": use_reranker,

@@ -3948,7 +3948,7 @@ function getAnswerStyleInstruction() {
         return "Answer in a research-style format: direct answer, evidence, interpretation, limitations. Include citations after key claims.";
     }
 
-    return "Answer in a detailed but readable format. Start with a direct answer, then explain important points with evidence. Include citations after key claims.";
+    return "Answer in a detailed, useful, and source-grounded format. Use this structure: Direct answer, Key points, Evidence from sources, and Limitations. Mention citations after important claims.";
 }
 
 function buildContextualQuery(currentQuestion) {
@@ -4118,12 +4118,12 @@ async function sendMessage() {
     const payload = {
         query: buildContextualQuery(userText),
         document_id: doc.id,
-        top_k: 7,
+        top_k: 8,
         retrieval_mode: "hybrid",
         use_reranker: document.getElementById("useReranker").checked,
         use_llm: document.getElementById("useLLM").checked,
         use_graph: document.getElementById("useGraph").checked,
-        graph_entity_limit: 10,
+        graph_entity_limit: 12,
         use_graph_retrieval: document.getElementById("useGraphRetrieval").checked,
         graph_retrieval_top_k: 6
     };
@@ -5055,7 +5055,7 @@ function getAnswerStyleInstruction() {
         return "Focus on comparison. Explain similarities, differences, and evidence clearly. Include citations after key claims.";
     }
 
-    return "Answer in a detailed but readable format. Start with a direct answer, then explain important points with evidence. Include citations after key claims.";
+    return "Answer in a detailed, useful, and source-grounded format. Use this structure: Direct answer, Key points, Evidence from sources, and Limitations. Mention citations after important claims.";
 }
 
 function buildContextualQuery(currentQuestion, compareMode = false) {
@@ -5082,12 +5082,12 @@ function askPayload(query, documentId) {
     return {
         query: query,
         document_id: documentId,
-        top_k: 7,
+        top_k: 8,
         retrieval_mode: "hybrid",
         use_reranker: document.getElementById("useReranker").checked,
         use_llm: document.getElementById("useLLM").checked,
         use_graph: document.getElementById("useGraph").checked,
-        graph_entity_limit: 10,
+        graph_entity_limit: 12,
         use_graph_retrieval: document.getElementById("useGraphRetrieval").checked,
         graph_retrieval_top_k: 6
     };
