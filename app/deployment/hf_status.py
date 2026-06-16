@@ -6039,3 +6039,177 @@ function openGraphViewerPhase36() {
         html = html.replace("</body>", js + "\n</body>")
 
     return html
+
+
+
+# =====================================================
+# Phase 37 override: use backend /documents/compare
+# =====================================================
+
+try:
+    _phase37_previous_get_product_app_html = get_product_app_html
+except NameError:
+    _phase37_previous_get_product_app_html = None
+
+
+def get_product_app_html() -> str:
+    if _phase37_previous_get_product_app_html is None:
+        return "<h1>GraphResearcher App</h1><p>App UI is unavailable.</p>"
+
+    html = _phase37_previous_get_product_app_html()
+
+    js = """
+<script>
+/*
+Phase 37:
+Compare mode now uses backend /documents/compare instead of doing only browser-side comparison.
+Single-document chat still uses the previous sendMessage logic.
+*/
+
+if (!window.phase37OriginalSendMessage) {
+    window.phase37OriginalSendMessage = window.sendMessage;
+}
+
+function phase37AnswerHtml(question, askResponse, doc) {
+    if (typeof formatProfessionalAnswerPhase34 === 'function') {
+        return formatProfessionalAnswerPhase34(question, askResponse, doc);
+    }
+
+    const answer = String(askResponse.answer || 'No answer generated.');
+    return '<div class="answer-card"><h2>Answer</h2><p>' + htmlEscapePhase37(answer) + '</p></div>';
+}
+
+function htmlEscapePhase37(value) {
+    return String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('\"', '&quot;');
+}
+
+window.sendMessage = async function() {
+    const doc = getSelectedDocument();
+    const compareDoc = getCompareDocument ? getCompareDocument() : null;
+    const input = document.getElementById('messageInput');
+    const userText = input.value.trim();
+
+    if (!doc) {
+        alert('Upload or select a document first.');
+        return;
+    }
+
+    if (!userText) return;
+
+    if (!compareDoc) {
+        return window.phase37OriginalSendMessage();
+    }
+
+    const convo = getConversation();
+
+    convo.push({
+        role: 'user',
+        content: userText,
+        createdAt: new Date().toISOString()
+    });
+
+    input.value = '';
+    saveConversations();
+    renderMessages();
+
+    setStatus('Comparing documents...');
+    document.getElementById('metricsBox').innerHTML = '';
+
+    try {
+        const payload = {
+            primary_document_id: doc.id,
+            compare_document_id: compareDoc.id,
+            query: userText,
+            retrieval_mode: 'hybrid',
+            top_k: 8,
+            use_reranker: document.getElementById('useReranker').checked,
+            use_llm: document.getElementById('useLLM').checked,
+            use_graph: document.getElementById('useGraph').checked,
+            graph_entity_limit: 12,
+            use_graph_retrieval: document.getElementById('useGraphRetrieval').checked,
+            graph_retrieval_top_k: 6,
+            answer_style: document.getElementById('answerStyle')?.value || 'comparison'
+        };
+
+        const response = await fetch('/documents/compare', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(JSON.stringify(data));
+        }
+
+        const dataA = data.document_a?.ask_response || {
+            answer: data.document_a?.answer || 'No answer from first document.',
+            citations: data.document_a?.sources || []
+        };
+
+        const dataB = data.document_b?.ask_response || {
+            answer: data.document_b?.answer || 'No answer from second document.',
+            citations: data.document_b?.sources || []
+        };
+
+        const answerAHtml = phase37AnswerHtml(userText, dataA, doc);
+        const answerBHtml = phase37AnswerHtml(userText, dataB, compareDoc);
+
+        convo.push({
+            role: 'assistant',
+            type: 'compare',
+            question: userText,
+            docAName: doc.name || 'Document A',
+            docBName: compareDoc.name || 'Document B',
+            answerA: data.document_a?.answer || 'No answer from first document.',
+            answerB: data.document_b?.answer || 'No answer from second document.',
+            answerAHtml,
+            answerBHtml,
+            comparisonSummary: data.comparison_summary || '',
+            rawCompare: data,
+            createdAt: new Date().toISOString()
+        });
+
+        saveConversations();
+        renderMessages();
+
+        if (typeof updateMetrics === 'function') {
+            updateMetrics(dataA, doc.name || 'Document A');
+            updateMetrics(dataB, compareDoc.name || 'Document B');
+        }
+
+        if (typeof updateCitations === 'function' && typeof buildSources === 'function') {
+            updateCitations([
+                { label: doc.name || 'Document A', sources: buildSources(dataA, doc) },
+                { label: compareDoc.name || 'Document B', sources: buildSources(dataB, compareDoc) }
+            ]);
+        }
+
+        setStatus('Backend comparison ready');
+
+    } catch (error) {
+        convo.push({
+            role: 'assistant',
+            content: 'Comparison error: ' + error.message,
+            createdAt: new Date().toISOString()
+        });
+
+        saveConversations();
+        renderMessages();
+        setStatus('Comparison error');
+    }
+}
+</script>
+"""
+
+    if "Phase 37:" not in html:
+        html = html.replace("</body>", js + "\n</body>")
+
+    return html

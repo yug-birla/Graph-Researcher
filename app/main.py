@@ -1,3 +1,4 @@
+from app.product.document_compare_service import CompareDocumentsRequest, compare_documents_with_existing_ask
 from app.product.document_storage_manager import get_document_storage_status, delete_document_storage
 
 import os
@@ -840,3 +841,13 @@ def document_storage_status(document_id: str):
 @app.delete("/documents/{document_id}/delete")
 def delete_document_runtime_storage(document_id: str):
     return delete_document_storage(document_id)
+
+
+# Backend document comparison endpoint
+
+@app.post("/documents/compare")
+async def compare_two_documents(request: CompareDocumentsRequest):
+    return await compare_documents_with_existing_ask(
+        app=app,
+        request=request
+    )
