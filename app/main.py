@@ -1,3 +1,4 @@
+from app.deployment.hf_status import get_product_app_html
 import uuid
 from app.product.product_db import (
     init_product_database,
@@ -645,3 +646,10 @@ def get_product_conversation_messages(conversation_id: str):
         "conversation_id": conversation_id,
         "messages": list_messages(conversation_id=conversation_id)
     }
+
+
+# Product ChatGPT-style app UI endpoint
+
+@app.get("/app", response_class=HTMLResponse)
+def product_app_page():
+    return get_product_app_html()
