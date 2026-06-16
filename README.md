@@ -18,7 +18,11 @@ The project is built around the idea that a document chatbot should not only ans
 </p>
 
 ---
-
+![Demo](images/Screenshot 2026-06-17 001511.png)
+![Demo](images/Screenshot 2026-06-17 001548.png)
+![Demo](images/Screenshot 2026-06-17 001604.png)
+![Demo](images/Screenshot 2026-06-17 001840.png)
+---
 ## Project Highlights
 
 * Upload and chat with PDFs/documents
