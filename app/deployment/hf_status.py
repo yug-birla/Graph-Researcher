@@ -4058,7 +4058,7 @@ function updateCitations(data) {
             <div class="source-line"><b>Chunk:</b> ${source.chunk_id}</div>
             <div class="preview-text">${String(source.preview).slice(0, 260)}</div>
             <br>
-            <button class="light" onclick="openSourceModal(${index})">View source details</button>
+            <button class="light" onclick="openSourceModal(${index})">Open source details</button>
         `;
 
         box.appendChild(card);

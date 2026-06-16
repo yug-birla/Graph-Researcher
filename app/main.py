@@ -1,3 +1,4 @@
+from app.product.source_viewer import get_source_details, get_source_html
 from app.deployment.hf_status import get_home_html, get_product_app_html
 from app.deployment.hf_status import get_product_app_html
 import uuid
@@ -656,3 +657,35 @@ def product_app_page():
 @app.get("/app", response_class=HTMLResponse)
 def product_workspace_app_page():
     return get_product_app_html()
+
+
+# Source viewer endpoints
+
+@app.get("/documents/{document_id}/sources/{source_id}")
+def document_source_details(
+    document_id: str,
+    source_id: str,
+    page: str = "",
+    chunk_id: str = ""
+):
+    return get_source_details(
+        document_id=document_id,
+        source_id=source_id,
+        page=page,
+        chunk_id=chunk_id
+    )
+
+
+@app.get("/documents/{document_id}/sources/{source_id}/view", response_class=HTMLResponse)
+def document_source_view(
+    document_id: str,
+    source_id: str,
+    page: str = "",
+    chunk_id: str = ""
+):
+    return get_source_html(
+        document_id=document_id,
+        source_id=source_id,
+        page=page,
+        chunk_id=chunk_id
+    )
