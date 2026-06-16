@@ -1,3 +1,15 @@
+
+from fastapi import Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from app.product.secure_admin_ui import get_secure_admin_html
+from app.product.auth_service import get_current_user_from_request
+from app.product.admin_monitoring_service import (
+    get_admin_overview,
+    get_storage_only,
+    get_security_only,
+    get_routes_only,
+)
+
 from app.product.document_compare_service import CompareDocumentsRequest, compare_documents_with_existing_ask
 from app.product.document_storage_manager import get_document_storage_status, delete_document_storage
 
@@ -851,3 +863,35 @@ async def compare_two_documents(request: CompareDocumentsRequest):
         app=app,
         request=request
     )
+
+
+# Secure admin monitoring dashboard
+
+@app.get("/admin/secure", response_class=HTMLResponse)
+def secure_admin_dashboard(request: Request):
+    user = get_current_user_from_request(request)
+
+    if not user.get("authenticated") or user.get("role") != "admin":
+        return RedirectResponse(url="/login", status_code=302)
+
+    return get_secure_admin_html()
+
+
+@app.get("/admin/api/monitor/overview")
+def admin_monitor_overview(request: Request):
+    return get_admin_overview(request=request, app=app)
+
+
+@app.get("/admin/api/monitor/storage")
+def admin_monitor_storage(request: Request):
+    return get_storage_only(request=request)
+
+
+@app.get("/admin/api/monitor/security")
+def admin_monitor_security(request: Request):
+    return get_security_only(request=request)
+
+
+@app.get("/admin/api/monitor/routes")
+def admin_monitor_routes(request: Request):
+    return get_routes_only(request=request, app=app)
