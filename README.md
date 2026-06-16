@@ -330,7 +330,7 @@ HF_API_TOKEN=<secret>
 ### Admin Security
 
 ```env
-ADMIN_EMAILS=2006yugb@gmail.com
+ADMIN_EMAILS=admin@gmail.com
 SESSION_SECRET_KEY=<long-random-secret>
 ADMIN_DASHBOARD_KEY=<strong-admin-password>
 ```
