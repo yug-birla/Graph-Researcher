@@ -1,3 +1,22 @@
+import uuid
+from app.product.product_db import (
+    init_product_database,
+    get_database_status,
+    upsert_user,
+    list_users,
+    register_document_record,
+    list_documents,
+    create_conversation,
+    list_conversations,
+    add_message,
+    list_messages
+)
+from app.product.product_schema import (
+    CreateLocalUserRequest,
+    RegisterDocumentRequest,
+    CreateConversationRequest,
+    AddMessageRequest
+)
 from app.evaluation.graphrag_batch_evaluator import run_graphrag_batch_evaluation
 from app.evaluation.graph_fusion_evaluator import compare_graph_fusion_retrieval
 from app.graph.graph_guided_retriever import graph_guided_retrieve
@@ -79,7 +98,7 @@ def health_check():
         "message": f"{settings.APP_NAME} backend is alive",
         "environment": settings.ENVIRONMENT,
         "version": settings.APP_VERSION,
-        "phase": "Phase 20 - GraphRAG Batch Evaluation Report"
+        "phase": "Phase 23 - Product Database Foundation"
     }
 
 
@@ -539,3 +558,90 @@ def evaluate_graph_fusion_batch_for_document(
 @app.get("/graphrag-demo", response_class=HTMLResponse)
 def graphrag_demo_page():
     return get_graphrag_demo_html()
+
+
+# Product database foundation endpoints
+
+@app.on_event("startup")
+def initialize_product_database_on_startup():
+    init_product_database()
+
+
+@app.get("/product/db/status")
+def product_database_status():
+    return get_database_status()
+
+
+@app.post("/product/users/local")
+def create_or_update_local_user(request: CreateLocalUserRequest):
+    user_id = "local_" + request.email.lower().replace("@", "_").replace(".", "_")
+
+    return upsert_user(
+        user_id=user_id,
+        email=request.email,
+        name=request.name,
+        role=request.role,
+        auth_provider="local"
+    )
+
+
+@app.get("/product/users")
+def get_product_users(limit: int = Query(100, ge=1, le=500)):
+    return {
+        "users": list_users(limit=limit)
+    }
+
+
+@app.post("/product/documents/register")
+def register_product_document(request: RegisterDocumentRequest):
+    return register_document_record(
+        document_id=request.document_id,
+        source_file_name=request.source_file_name,
+        owner_user_id=request.owner_user_id
+    )
+
+
+@app.get("/product/documents")
+def get_product_documents(limit: int = Query(100, ge=1, le=500)):
+    return {
+        "documents": list_documents(limit=limit)
+    }
+
+
+@app.post("/product/conversations")
+def create_product_conversation(request: CreateConversationRequest):
+    conversation_id = str(uuid.uuid4())
+
+    return create_conversation(
+        conversation_id=conversation_id,
+        owner_user_id=request.owner_user_id,
+        document_id=request.document_id,
+        title=request.title
+    )
+
+
+@app.get("/product/conversations")
+def get_product_conversations(limit: int = Query(100, ge=1, le=500)):
+    return {
+        "conversations": list_conversations(limit=limit)
+    }
+
+
+@app.post("/product/messages")
+def add_product_message(request: AddMessageRequest):
+    message_id = str(uuid.uuid4())
+
+    return add_message(
+        message_id=message_id,
+        conversation_id=request.conversation_id,
+        role=request.role,
+        content=request.content
+    )
+
+
+@app.get("/product/conversations/{conversation_id}/messages")
+def get_product_conversation_messages(conversation_id: str):
+    return {
+        "conversation_id": conversation_id,
+        "messages": list_messages(conversation_id=conversation_id)
+    }
