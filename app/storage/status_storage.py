@@ -1,4 +1,4 @@
-﻿import json
+import json
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timezone
 

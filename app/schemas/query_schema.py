@@ -17,3 +17,8 @@ class AskRequest(BaseModel):
     # Adds graph context from entities and relations when document graph exists.
     use_graph: bool = True
     graph_entity_limit: int = Field(default=8, ge=1, le=30)
+
+    # Phase 17:
+    # Adds graph-selected chunks into the retrieval evidence list.
+    use_graph_retrieval: bool = True
+    graph_retrieval_top_k: int = Field(default=5, ge=1, le=20)

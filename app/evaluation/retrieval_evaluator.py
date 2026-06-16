@@ -1,4 +1,4 @@
-﻿from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any
 
 from app.schemas.evaluation_schema import (
     RetrievalTestCase,

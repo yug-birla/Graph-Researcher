@@ -1,4 +1,4 @@
-﻿import json
+import json
 from typing import List, Dict, Any, Optional
 
 from app.core.config import settings

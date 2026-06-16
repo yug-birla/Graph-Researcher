@@ -1,4 +1,4 @@
-﻿from typing import List, Dict, Any
+from typing import List, Dict, Any
 
 
 def build_citation_text(payload: Dict[str, Any], source_id: str) -> str:

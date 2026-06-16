@@ -1,4 +1,4 @@
-﻿from typing import List
+from typing import List
 from app.ingestion.base_parser import BaseParser
 from app.schemas.rich_content_block import RichContentBlock
 

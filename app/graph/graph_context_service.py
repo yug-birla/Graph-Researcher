@@ -3,6 +3,7 @@ import re
 from typing import Dict, Any, List, Optional
 
 from app.graph.graph_storage import read_document_graph
+from app.graph.graph_quality import is_noisy_entity_name, is_noisy_relation
 
 
 STOPWORDS = {
@@ -21,24 +22,43 @@ def tokenize_query(query: str) -> List[str]:
     ]
 
 
+def tokenize_entity_name(name: str) -> List[str]:
+    return re.findall(r"[a-zA-Z0-9_]+", (name or "").lower())
+
+
 def entity_relevance_score(entity, query_terms: List[str]) -> float:
     if not query_terms:
         return 0.0
 
+    if is_noisy_entity_name(entity.name):
+        return 0.0
+
     name_lower = entity.name.lower()
     entity_id_lower = entity.entity_id.lower()
+    name_tokens = tokenize_entity_name(entity.name)
+    entity_id_tokens = tokenize_entity_name(entity.entity_id.replace("_", " "))
 
     score = 0.0
 
     for term in query_terms:
         if term == name_lower or term == entity_id_lower:
-            score += 8.0
-        elif term in name_lower:
-            score += 4.0
-        elif term in entity_id_lower:
-            score += 3.0
+            score += 10.0
+            continue
 
-    score += min(entity.mention_count, 10) * 0.15
+        if term in name_tokens:
+            score += 6.0
+            continue
+
+        if term in entity_id_tokens:
+            score += 5.0
+            continue
+
+        # Avoid rag matching paragraph. Substring only for longer terms.
+        if len(term) >= 4 and term in name_lower:
+            score += 2.0
+
+    if score > 0:
+        score += min(entity.mention_count, 10) * 0.15
 
     return score
 
@@ -48,12 +68,6 @@ def build_graph_context_for_query(
     query: str,
     limit: int = 8
 ) -> Dict[str, Any]:
-    """
-    Finds graph entities and relations related to the query.
-
-    This does not replace vector retrieval.
-    It adds structured graph context to the final answer pipeline.
-    """
 
     if not document_id:
         return {
@@ -98,6 +112,9 @@ def build_graph_context_for_query(
     matched_relations = []
 
     for relation in graph.relations:
+        if is_noisy_relation(relation):
+            continue
+
         if (
             relation.source_entity_id in matched_entity_ids
             or relation.target_entity_id in matched_entity_ids

@@ -1,4 +1,4 @@
-﻿import re
+import re
 from typing import Optional, List, Dict, Any
 from rank_bm25 import BM25Okapi
 

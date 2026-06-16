@@ -1,3 +1,4 @@
+from app.graph.graph_retrieval_fusion import fuse_retrieval_results_with_graph
 from app.graph.graph_context_service import build_graph_context_for_query
 import re
 from typing import Optional, Dict, Any, List
@@ -31,7 +32,9 @@ def answer_question(
     use_reranker: bool = True,
     use_llm: bool = True,
     use_graph: bool = True,
-    graph_entity_limit: int = 8
+    graph_entity_limit: int = 8,
+    use_graph_retrieval: bool = True,
+    graph_retrieval_top_k: int = 5
 ) -> Dict[str, Any]:
 
     candidate_k = top_k
@@ -62,6 +65,29 @@ def answer_question(
 
     cleaned_results = clean_retrieved_results(retrieved_results)
     sourced_results = attach_source_ids(cleaned_results)
+
+    fusion_result = fuse_retrieval_results_with_graph(
+        document_id=document_id,
+        query=query,
+        retrieval_results=sourced_results,
+        graph_entity_limit=graph_entity_limit,
+        graph_top_k=graph_retrieval_top_k,
+        final_top_k=max(top_k, graph_retrieval_top_k)
+    ) if use_graph_retrieval else {
+        "fused_results": sourced_results,
+        "fusion_used": False,
+        "reason": "Graph retrieval fusion disabled.",
+        "graph_retrieval": {},
+        "normal_count": len(sourced_results),
+        "graph_added_count": 0,
+        "graph_supported_count": 0,
+        "final_count": len(sourced_results)
+    }
+
+    sourced_results = fusion_result.get("fused_results", sourced_results)
+
+    # Re-attach source IDs after fusion because graph-added chunks also need citations.
+    sourced_results = attach_source_ids(sourced_results)
 
     citations = create_citation_objects(sourced_results)
 
@@ -185,6 +211,10 @@ def answer_question(
         },
         "graph_used": bool(graph_context.get("matched_entities") or graph_context.get("matched_relations")),
         "graph_context": graph_context,
+        "retrieval_fusion": fusion_result if "fusion_result" in locals() else {
+            "fusion_used": False,
+            "reason": "Fusion result was not created."
+        },
         "citations": citations,
         "evidence": evidence_items,
         "sources": sourced_results

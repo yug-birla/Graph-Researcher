@@ -1,4 +1,4 @@
-﻿from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any
 
 from app.core.config import settings
 from app.retrieval.embedding_service import embed_text

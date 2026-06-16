@@ -1,4 +1,4 @@
-﻿import uuid
+import uuid
 import hashlib
 from pathlib import Path
 from fastapi import UploadFile

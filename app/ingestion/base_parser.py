@@ -1,4 +1,4 @@
-﻿from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod
 from typing import List
 from app.schemas.rich_content_block import RichContentBlock
 

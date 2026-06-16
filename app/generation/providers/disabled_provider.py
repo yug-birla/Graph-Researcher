@@ -1,4 +1,4 @@
-﻿from typing import Dict, Any
+from typing import Dict, Any
 
 from app.generation.providers.base_provider import BaseLLMProvider
 

@@ -1,4 +1,4 @@
-﻿from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List
 
 from app.core.config import settings
 from app.retrieval.search_service import search_relevant_chunks

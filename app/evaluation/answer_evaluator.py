@@ -1,4 +1,4 @@
-﻿import re
+import re
 from typing import List, Optional, Dict, Any
 
 from app.schemas.evaluation_schema import (

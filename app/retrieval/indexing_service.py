@@ -1,4 +1,4 @@
-﻿from typing import Dict, Any
+from typing import Dict, Any
 
 from app.storage.processed_storage import read_processed_chunks
 from app.storage.status_storage import update_document_status

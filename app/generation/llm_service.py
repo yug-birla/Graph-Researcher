@@ -1,4 +1,4 @@
-﻿from typing import Dict, Any
+from typing import Dict, Any
 
 from app.core.config import settings
 from app.generation.provider_factory import get_llm_provider

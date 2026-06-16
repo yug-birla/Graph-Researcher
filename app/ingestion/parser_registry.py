@@ -1,4 +1,4 @@
-﻿from typing import Optional
+from typing import Optional
 
 from app.ingestion.base_parser import BaseParser
 from app.ingestion.txt_parser import TxtParser

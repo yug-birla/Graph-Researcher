@@ -1,8 +1,14 @@
 
 from typing import Dict, Any, List, Optional
+import re
 
 from app.graph.graph_context_service import build_graph_context_for_query
 from app.storage.processed_storage import read_processed_chunks
+from app.graph.graph_quality import (
+    is_low_quality_chunk_text,
+    is_meta_showcase_chunk_text,
+    is_cover_or_marketing_chunk_text
+)
 
 
 def get_value(obj, key: str, default=None):
@@ -34,7 +40,7 @@ def build_chunk_lookup(chunks: List[Any]) -> Dict[str, Any]:
     return lookup
 
 
-def extract_text_preview(chunk, max_chars: int = 500) -> str:
+def extract_text_preview(chunk, max_chars: int = 700) -> str:
     text = (
         get_value(chunk, "content")
         or get_value(chunk, "text")
@@ -49,14 +55,54 @@ def extract_text_preview(chunk, max_chars: int = 500) -> str:
     return text
 
 
+def tokenize(text: str) -> List[str]:
+    return re.findall(r"[a-zA-Z0-9_]+", str(text or "").lower())
+
+
+def query_text_relevance(query: str, text: str) -> float:
+    """
+    Adds text-level relevance so graph retrieval does not rank a chunk
+    only because it has connected entities.
+    """
+
+    query_terms = [
+        term for term in tokenize(query)
+        if term not in {"what", "is", "are", "the", "a", "an", "of", "to", "and", "why", "how"}
+    ]
+
+    text_lower = str(text or "").lower()
+    text_tokens = set(tokenize(text))
+
+    score = 0.0
+
+    for term in query_terms:
+        if term in text_tokens:
+            score += 4.0
+        elif len(term) >= 4 and term in text_lower:
+            score += 1.5
+
+    # Definition questions should prefer chunks with definition-like language.
+    if "what" in query.lower() and "rag" in query.lower():
+        definition_markers = [
+            "rag is",
+            "rag stands for",
+            "retrieval-augmented generation",
+            "retrieval augmented generation",
+            "adds a retrieval step",
+            "before generation",
+            "document corpus"
+        ]
+
+        for marker in definition_markers:
+            if marker in text_lower:
+                score += 5.0
+
+    return score
+
+
 def score_graph_chunks(
     graph_context: Dict[str, Any]
 ) -> Dict[str, Dict[str, Any]]:
-    """
-    Scores chunks using matched graph entities and relations.
-
-    Higher score means the chunk is more graph-relevant to the query.
-    """
 
     chunk_scores: Dict[str, Dict[str, Any]] = {}
 
@@ -118,12 +164,6 @@ def graph_guided_retrieve(
     graph_entity_limit: int = 8,
     top_k: int = 5
 ) -> Dict[str, Any]:
-    """
-    Returns graph-selected chunks for a query.
-
-    This is a debug/research endpoint.
-    It helps us inspect whether the graph is selecting useful evidence.
-    """
 
     if not document_id:
         return {
@@ -160,25 +200,31 @@ def graph_guided_retrieve(
     chunk_lookup = build_chunk_lookup(chunks)
     chunk_scores = score_graph_chunks(graph_context)
 
-    ranked = sorted(
-        chunk_scores.items(),
-        key=lambda item: item[1]["score"],
-        reverse=True
-    )
+    candidate_results = []
 
-    results = []
-
-    for rank, (chunk_id, info) in enumerate(ranked[:top_k], start=1):
+    for chunk_id, info in chunk_scores.items():
         chunk = chunk_lookup.get(chunk_id)
 
         if chunk is None:
             continue
 
-        results.append(
+        text_preview = extract_text_preview(chunk)
+
+        if is_low_quality_chunk_text(text_preview):
+            continue
+
+        if is_meta_showcase_chunk_text(text_preview):
+            continue
+
+        if is_cover_or_marketing_chunk_text(text_preview):
+            continue
+
+        final_score = info["score"] + query_text_relevance(query, text_preview)
+
+        candidate_results.append(
             {
-                "rank": rank,
                 "chunk_id": chunk_id,
-                "graph_score": round(info["score"], 4),
+                "graph_score": round(final_score, 4),
                 "page_number": get_value(chunk, "page_number"),
                 "source_file_name": (
                     get_value(chunk, "source_file_name")
@@ -187,9 +233,21 @@ def graph_guided_retrieve(
                 ),
                 "matched_entities": sorted(set(info["matched_entities"])),
                 "matched_relations": sorted(set(info["matched_relations"])),
-                "text_preview": extract_text_preview(chunk)
+                "text_preview": text_preview
             }
         )
+
+    candidate_results = sorted(
+        candidate_results,
+        key=lambda item: item["graph_score"],
+        reverse=True
+    )
+
+    results = []
+
+    for rank, item in enumerate(candidate_results[:top_k], start=1):
+        item["rank"] = rank
+        results.append(item)
 
     return {
         "status": "success",

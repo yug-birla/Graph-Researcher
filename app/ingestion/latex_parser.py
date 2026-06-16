@@ -1,4 +1,4 @@
-﻿import re
+import re
 from typing import List
 
 from app.ingestion.base_parser import BaseParser

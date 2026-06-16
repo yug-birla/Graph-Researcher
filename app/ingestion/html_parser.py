@@ -1,4 +1,4 @@
-﻿from typing import List
+from typing import List
 from bs4 import BeautifulSoup
 
 from app.ingestion.base_parser import BaseParser

@@ -1,4 +1,4 @@
-﻿from app.core.config import settings
+from app.core.config import settings
 from app.generation.providers.base_provider import BaseLLMProvider
 from app.generation.providers.local_provider import LocalLLMProvider
 from app.generation.providers.huggingface_provider import HuggingFaceLLMProvider

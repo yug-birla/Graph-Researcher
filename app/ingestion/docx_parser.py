@@ -1,4 +1,4 @@
-﻿from typing import List
+from typing import List
 from docx import Document
 from docx.text.paragraph import Paragraph
 from docx.table import Table
