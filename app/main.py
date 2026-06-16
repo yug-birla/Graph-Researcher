@@ -1,3 +1,4 @@
+from app.graph.graph_guided_retriever import graph_guided_retrieve
 from app.graph.graph_context_service import build_graph_context_for_query
 from app.graph.graph_visualization import get_graph_visualization_html
 from app.graph.graph_builder import build_document_graph
@@ -76,7 +77,7 @@ def health_check():
         "message": f"{settings.APP_NAME} backend is alive",
         "environment": settings.ENVIRONMENT,
         "version": settings.APP_VERSION,
-        "phase": "Phase 15 - Graph-Augmented Answering"
+        "phase": "Phase 16 - Graph-Guided Retrieval Debug Layer"
     }
 
 
@@ -454,3 +455,28 @@ def get_graph_context_for_question(
         query=query,
         limit=limit
     )
+
+
+# Graph-guided retrieval endpoint
+
+@app.get("/documents/{document_id}/graph/retrieve")
+def graph_guided_retrieval_endpoint(
+    document_id: str,
+    query: str = Query(..., min_length=1),
+    graph_entity_limit: int = Query(8, ge=1, le=30),
+    top_k: int = Query(5, ge=1, le=20)
+):
+    result = graph_guided_retrieve(
+        document_id=document_id,
+        query=query,
+        graph_entity_limit=graph_entity_limit,
+        top_k=top_k
+    )
+
+    if result.get("status") == "failed":
+        raise HTTPException(
+            status_code=400,
+            detail=result
+        )
+
+    return result
