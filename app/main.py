@@ -1,3 +1,4 @@
+from app.product.document_storage_manager import get_document_storage_status, delete_document_storage
 
 import os
 from fastapi import Request, Query
@@ -827,3 +828,15 @@ def auth_dev_session(
 @app.get("/auth/logout")
 def auth_logout(request: Request):
     return clear_session(request)
+
+
+# Document storage status and delete endpoints
+
+@app.get("/documents/{document_id}/storage")
+def document_storage_status(document_id: str):
+    return get_document_storage_status(document_id)
+
+
+@app.delete("/documents/{document_id}/delete")
+def delete_document_runtime_storage(document_id: str):
+    return delete_document_storage(document_id)
