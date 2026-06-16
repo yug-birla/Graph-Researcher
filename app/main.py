@@ -1,4 +1,12 @@
-﻿from typing import Optional
+from app.graph.graph_visualization import get_graph_visualization_html
+from app.graph.graph_builder import build_document_graph
+from app.graph.graph_storage import read_document_graph
+from app.graph.graph_query_service import (
+    list_entities,
+    search_entities,
+    get_entity_neighborhood
+)
+from typing import Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -67,7 +75,7 @@ def health_check():
         "message": f"{settings.APP_NAME} backend is alive",
         "environment": settings.ENVIRONMENT,
         "version": settings.APP_VERSION,
-        "phase": "Phase 11 - Hugging Face Deployment Readiness"
+        "phase": "Phase 14.1 - Graph Visualization UI"
     }
 
 
@@ -330,3 +338,101 @@ def deployment_config():
 @app.get("/demo", response_class=HTMLResponse)
 def demo_page():
     return get_demo_html()
+
+
+# Graph foundation endpoints
+
+@app.post("/documents/{document_id}/graph/build")
+def build_graph_for_document(document_id: str):
+    result = build_document_graph(document_id)
+
+    if result.get("status") == "failed":
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("message", "Graph build failed.")
+        )
+
+    return result
+
+
+@app.get("/documents/{document_id}/graph")
+def get_document_graph(document_id: str):
+    graph = read_document_graph(document_id)
+
+    if graph is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Graph not found. Build the graph first."
+        )
+
+    return graph
+
+
+@app.get("/documents/{document_id}/graph/entities")
+def get_graph_entities(
+    document_id: str,
+    limit: int = Query(50, ge=1, le=500),
+    entity_type: Optional[str] = None
+):
+    result = list_entities(
+        document_id=document_id,
+        limit=limit,
+        entity_type=entity_type
+    )
+
+    if result.get("status") == "failed":
+        raise HTTPException(
+            status_code=404,
+            detail=result.get("message")
+        )
+
+    return result
+
+
+@app.get("/documents/{document_id}/graph/search")
+def search_graph_entities(
+    document_id: str,
+    query: str = Query(..., min_length=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    result = search_entities(
+        document_id=document_id,
+        query=query,
+        limit=limit
+    )
+
+    if result.get("status") == "failed":
+        raise HTTPException(
+            status_code=404,
+            detail=result.get("message")
+        )
+
+    return result
+
+
+@app.get("/documents/{document_id}/graph/neighborhood")
+def get_graph_neighborhood(
+    document_id: str,
+    entity: str = Query(..., min_length=1),
+    limit: int = Query(50, ge=1, le=200)
+):
+    result = get_entity_neighborhood(
+        document_id=document_id,
+        entity=entity,
+        limit=limit
+    )
+
+    if result.get("status") == "failed":
+        raise HTTPException(
+            status_code=404,
+            detail=result.get("message")
+        )
+
+    return result
+
+
+# Graph visualization endpoint
+
+@app.get("/documents/{document_id}/graph/view", response_class=HTMLResponse)
+def view_document_graph(document_id: str):
+    return get_graph_visualization_html(document_id)
