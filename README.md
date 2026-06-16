@@ -18,7 +18,7 @@ The project is built around the idea that a document chatbot should not only ans
 </p>
 
 ---
-![Demo](images/demo1.png)
+![Demo](./images/demo1.png)
 
 ![Demo](images/demo2.png)
 
