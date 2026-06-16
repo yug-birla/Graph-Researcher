@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+﻿FROM python:3.11-slim
 
 RUN useradd -m -u 1000 user
 
@@ -18,18 +18,23 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=user . $HOME/app
 
+RUN mkdir -p /tmp/graphrag/uploads /tmp/graphrag/processed /tmp/graphrag/qdrant /tmp/graphrag/evaluation
+RUN chown -R user:user /tmp/graphrag
+RUN chown -R user:user $HOME/app
+
 USER user
 
 ENV PORT=7860
+
 ENV LLM_PROVIDER=huggingface
 ENV ENABLE_LOCAL_LLM=false
 ENV HF_INFERENCE_MODEL=google/flan-t5-base
 ENV HF_TIMEOUT_SECONDS=60
 
-ENV UPLOAD_DIR=data/uploads
-ENV PROCESSED_DIR=data/processed
-ENV QDRANT_LOCAL_PATH=data/qdrant
-ENV EVALUATION_DIR=data/evaluation
+ENV UPLOAD_DIR=/tmp/graphrag/uploads
+ENV PROCESSED_DIR=/tmp/graphrag/processed
+ENV QDRANT_LOCAL_PATH=/tmp/graphrag/qdrant
+ENV EVALUATION_DIR=/tmp/graphrag/evaluation
 
 EXPOSE 7860
 

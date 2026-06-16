@@ -128,7 +128,28 @@ class Settings:
     ENABLE_STATIC_ASSETS: bool = get_bool_env("ENABLE_STATIC_ASSETS", True)
 
     def ensure_directories(self) -> None:
-        self.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        directories = [
+            self.UPLOAD_DIR,
+            self.PROCESSED_DIR,
+            self.QDRANT_LOCAL_PATH,
+            self.EVALUATION_DIR
+        ]
+
+        try:
+            for directory in directories:
+                directory.mkdir(parents=True, exist_ok=True)
+
+        except PermissionError:
+            fallback_base = Path("/tmp/graphrag")
+            fallback_dirs = [
+                fallback_base / "uploads",
+                fallback_base / "processed",
+                fallback_base / "qdrant",
+                fallback_base / "evaluation"
+            ]
+
+            for directory in fallback_dirs:
+                directory.mkdir(parents=True, exist_ok=True)
         self.PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
         self.QDRANT_LOCAL_PATH.mkdir(parents=True, exist_ok=True)
         self.EVALUATION_DIR.mkdir(parents=True, exist_ok=True)
