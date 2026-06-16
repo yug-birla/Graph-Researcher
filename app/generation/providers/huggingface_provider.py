@@ -42,20 +42,10 @@ class HuggingFaceLLMProvider(BaseLLMProvider):
             if answer:
                 return clean_hosted_output(answer)
 
-            answer = self.call_hf_inference_model_api(prompt)
-
-            if answer:
-                return clean_hosted_output(answer)
-
             return ""
 
         if api_mode == "inference":
             answer = self.call_hf_inference_model_api(prompt)
-
-            if answer:
-                return clean_hosted_output(answer)
-
-            answer = self.call_chat_completion_api(prompt)
 
             if answer:
                 return clean_hosted_output(answer)
