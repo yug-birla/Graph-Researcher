@@ -119,6 +119,11 @@ class Settings:
     )
     HF_TIMEOUT_SECONDS: int = get_int_env("HF_TIMEOUT_SECONDS", 60)
 
+    # auto = try best route based on model name
+    # chat = force router chat-completions API
+    # inference = force HF inference model endpoint
+    HF_API_MODE: str = os.getenv("HF_API_MODE", "auto")
+
     MAX_GENERATION_TOKENS: int = get_int_env("MAX_GENERATION_TOKENS", 220)
     LOCAL_LLM_MAX_INPUT_TOKENS: int = get_int_env("LOCAL_LLM_MAX_INPUT_TOKENS", 1024)
 
