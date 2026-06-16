@@ -1,4 +1,5 @@
-﻿import re
+from app.graph.graph_context_service import build_graph_context_for_query
+import re
 from typing import Optional, Dict, Any, List
 
 from app.core.config import settings
@@ -28,7 +29,9 @@ def answer_question(
     top_k: int = 5,
     retrieval_mode: str = "hybrid",
     use_reranker: bool = True,
-    use_llm: bool = True
+    use_llm: bool = True,
+    use_graph: bool = True,
+    graph_entity_limit: int = 8
 ) -> Dict[str, Any]:
 
     candidate_k = top_k
@@ -104,6 +107,27 @@ def answer_question(
 
     evidence_context = build_evidence_context(evidence_items)
 
+    graph_context = build_graph_context_for_query(
+        document_id=document_id,
+        query=query,
+        limit=graph_entity_limit
+    ) if use_graph else {
+        "graph_available": False,
+        "reason": "Graph usage disabled.",
+        "matched_entities": [],
+        "matched_relations": [],
+        "context_text": ""
+    }
+
+    graph_context_text = graph_context.get("context_text", "")
+
+    if graph_context_text:
+        evidence_context = (
+            evidence_context
+            + "\n\nStructured graph context:\n"
+            + graph_context_text
+        )
+
     raw_llm_answer = ""
     llm_answer_after_citations = ""
 
@@ -159,6 +183,8 @@ def answer_question(
             "llm_answer_after_citations_preview": llm_answer_after_citations[:300],
             "llm_answer_accepted": used_llm
         },
+        "graph_used": bool(graph_context.get("matched_entities") or graph_context.get("matched_relations")),
+        "graph_context": graph_context,
         "citations": citations,
         "evidence": evidence_items,
         "sources": sourced_results

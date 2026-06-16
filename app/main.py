@@ -1,3 +1,4 @@
+from app.graph.graph_context_service import build_graph_context_for_query
 from app.graph.graph_visualization import get_graph_visualization_html
 from app.graph.graph_builder import build_document_graph
 from app.graph.graph_storage import read_document_graph
@@ -75,7 +76,7 @@ def health_check():
         "message": f"{settings.APP_NAME} backend is alive",
         "environment": settings.ENVIRONMENT,
         "version": settings.APP_VERSION,
-        "phase": "Phase 14.1 - Graph Visualization UI"
+        "phase": "Phase 15 - Graph-Augmented Answering"
     }
 
 
@@ -190,7 +191,9 @@ def ask_question(request: AskRequest):
         top_k=request.top_k,
         retrieval_mode=request.retrieval_mode,
         use_reranker=request.use_reranker,
-        use_llm=request.use_llm
+        use_llm=request.use_llm,
+        use_graph=request.use_graph,
+        graph_entity_limit=request.graph_entity_limit
     )
 
 
@@ -436,3 +439,18 @@ def get_graph_neighborhood(
 @app.get("/documents/{document_id}/graph/view", response_class=HTMLResponse)
 def view_document_graph(document_id: str):
     return get_graph_visualization_html(document_id)
+
+
+# Graph context debug endpoint
+
+@app.get("/documents/{document_id}/graph/context")
+def get_graph_context_for_question(
+    document_id: str,
+    query: str = Query(..., min_length=1),
+    limit: int = Query(8, ge=1, le=30)
+):
+    return build_graph_context_for_query(
+        document_id=document_id,
+        query=query,
+        limit=limit
+    )
