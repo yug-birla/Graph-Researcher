@@ -62,12 +62,17 @@ The project includes an ablation evaluation framework comparing **RAG only** vs.
 
 <!-- EVAL_RESULTS_START -->
 
-Evaluation not run yet. Gold labels in `eval/qa_50_graphresearcher.jsonl` contain TODO placeholders that must be filled with verified chunk IDs before running.
+### 15-Question Starter Evaluation (Vectorless RAG Master Guide)
 
-To run evaluation after labeling:
-```bash
-python scripts/run_graph_ablation_eval.py --base-url http://127.0.0.1:8000 --document-id YOUR_DOCUMENT_ID --qa-file eval/qa_50_graphresearcher.jsonl
-```
+Generated: 2026-06-18
+QA file: `eval/qa_15_starter.jsonl`
+
+| Mode | Recall@3 | Recall@5 | Recall@10 | Faithfulness | Completeness | Avg Latency (ms) | Avg Answer Words | Errors |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| RAG | 0.2944 | 0.4722 | 0.6389 | 0.9333 | 0.7167 | 7388.7 | 238.5 | 0 |
+| RAG + Graph | 0.2944 | 0.4722 | 0.6389 | 0.9333 | 0.7167 | 7114.3 | 238.5 | 0 |
+
+**Conclusion:** On this specific 15-question dataset, the rule-based GraphRAG implementation had **no significant effect** on retrieval recall or estimated faithfulness compared to standard hybrid retrieval with reranking. Latency was similar.
 
 <!-- EVAL_RESULTS_END -->
 
