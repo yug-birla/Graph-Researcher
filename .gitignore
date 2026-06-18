@@ -27,5 +27,7 @@ notebooks/
 *.safetensors
 *.onnx
 
+images/
+
 .DS_Store
 Thumbs.db
